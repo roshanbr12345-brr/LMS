@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard - ÖZU.LMS</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/dashboard.css">
+<link rel="stylesheet" href="css/responsive.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+.welcome-banner {
+  background: linear-gradient(135deg, #1a0a12 0%, #0d1a2a 100%);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 24px 28px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+}
+.welcome-banner::before {
+  content: '';
+  position: absolute;
+  right: -40px; top: -40px;
+  width: 200px; height: 200px;
+  background: radial-gradient(circle, rgba(200,16,46,0.15), transparent 70%);
+}
+.welcome-banner::after {
+  content: '';
+  position: absolute;
+  left: 40%; bottom: -30px;
+  width: 150px; height: 150px;
+  background: radial-gradient(circle, rgba(233,30,140,0.1), transparent 70%);
+}
+.welcome-text h2 {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-white);
+  margin-bottom: 4px;
+}
+.welcome-text p { color: var(--color-text-muted); font-size: 13px; }
+.welcome-text .highlight { color: var(--color-primary); font-weight: 600; }
+.welcome-avatar {
+  width: 56px; height: 56px;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-pink));
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 18px;
+  color: white;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+.activity-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.activity-item:last-child { border-bottom: none; }
+.activity-icon {
+  width: 32px; height: 32px;
+  border-radius: var(--radius);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+.activity-icon.assignment { background: rgba(200,16,46,0.15); color: var(--color-primary); }
+.activity-icon.grade { background: rgba(21,101,192,0.15); color: #42a5f5; }
+.activity-icon.announcement { background: rgba(233,30,140,0.15); color: var(--color-pink); }
+.activity-body { flex: 1; min-width: 0; }
+.activity-title { font-size: 13px; font-weight: 500; color: var(--color-text); margin-bottom: 2px; }
+.activity-desc { font-size: 12px; color: var(--color-text-muted); }
+.activity-time { font-size: 11px; color: var(--color-text-dim); white-space: nowrap; }
+.deadline-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.deadline-item:last-child { border-bottom: none; }
+.deadline-left { flex: 1; min-width: 0; }
+.deadline-title { font-size: 13px; font-weight: 500; color: var(--color-text); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.deadline-course { font-size: 11px; color: var(--color-text-muted); }
+.deadline-days {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.days-red { background: rgba(200,16,46,0.15); color: #ef5350; }
+.days-orange { background: rgba(245,124,0,0.15); color: #ffa726; }
+.days-green { background: rgba(46,125,50,0.15); color: #66bb6a; }
+
+.mini-calendar { }
+.cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.cal-month { font-weight: 600; font-size: 14px; color: var(--color-white); }
+.cal-nav {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius);
+  font-size: 12px;
+}
+.cal-nav:hover { background: var(--color-surface2); color: var(--color-white); }
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+.cal-day-name {
+  text-align: center;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-text-dim);
+  padding: 4px 0;
+}
+.cal-day {
+  text-align: center;
+  font-size: 12px;
+  padding: 6px 4px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  transition: all 0.15s;
+}
+.cal-day:hover { background: var(--color-surface2); color: var(--color-white); }
+.cal-day.today { background: var(--color-primary); color: white; font-weight: 700; }
+.cal-day.has-event { position: relative; }
+.cal-day.has-event::after {
+  content: '';
+  position: absolute;
+  bottom: 1px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: var(--color-pink);
+}
+.cal-day.other-month { color: var(--color-text-dim); opacity: 0.4; }
+
+.course-progress-item {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.course-progress-item:last-child { margin-bottom: 0; }
+.cpi-color {
+  width: 4px;
+  height: 40px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.cpi-info { flex: 1; min-width: 0; }
+.cpi-name { font-size: 13px; font-weight: 500; color: var(--color-text); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cpi-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.cpi-code { font-size: 11px; color: var(--color-text-muted); }
+.cpi-pct { font-size: 11px; font-weight: 600; color: var(--color-text); }
+</style>
+</head>
+<body>
+<div id="sidebar-placeholder"></div>
+<div id="topbar-placeholder"></div>
+
+<main class="main-content" id="main-content-area">
+  <div class="welcome-banner animate-in">
+    <div class="welcome-text">
+      <h2>Good afternoon, <span class="highlight">Vigneshrajan</span></h2>
+      <p>Spring 2025/26 &bull; Aviation Management &bull; <span id="current-date"></span></p>
+      <div style="margin-top:12px;display:flex;gap:8px;">
+        <a href="courses.html" class="btn btn-primary btn-sm"><i class="fas fa-book-open"></i> My Courses</a>
+        <a href="assignments.html" class="btn btn-ghost btn-sm"><i class="fas fa-tasks"></i> Assignments</a>
+      </div>
+    </div>
+    <div class="welcome-avatar user-initials">VT</div>
+  </div>
+
+  <!-- Stat Cards -->
+  <div class="stat-cards animate-in" style="animation-delay:0.05s">
+    <div class="stat-card red">
+      <div class="stat-icon red"><i class="fas fa-book-open"></i></div>
+      <div class="stat-value">5</div>
+      <div class="stat-label">Active Courses</div>
+      <div class="stat-change up"><i class="fas fa-arrow-up"></i> Spring 2025/26</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="stat-icon blue"><i class="fas fa-user-check"></i></div>
+      <div class="stat-value">92%</div>
+      <div class="stat-label">Attendance</div>
+      <div class="stat-change up"><i class="fas fa-check"></i> Above minimum</div>
+    </div>
+    <div class="stat-card pink">
+      <div class="stat-icon pink"><i class="fas fa-tasks"></i></div>
+      <div class="stat-value">4</div>
+      <div class="stat-label">Assignments Due</div>
+      <div class="stat-change down"><i class="fas fa-clock"></i> 2 this week</div>
+    </div>
+    <div class="stat-card white">
+      <div class="stat-icon white"><i class="fas fa-star"></i></div>
+      <div class="stat-value">3.7</div>
+      <div class="stat-label">Current GPA</div>
+      <div class="stat-change up"><i class="fas fa-arrow-up"></i> Good standing</div>
+    </div>
+  </div>
+
+  <!-- Main Grid -->
+  <div class="grid-21 animate-in" style="animation-delay:0.1s;">
+    <div style="display:flex;flex-direction:column;gap:20px;">
+      <!-- Course Progress -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Course Progress</div>
+          <a href="courses.html" class="btn btn-ghost btn-sm">View all</a>
+        </div>
+        <div id="course-progress-list"></div>
+      </div>
+
+      <!-- Performance Chart -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Grade Overview</div>
+          <select class="form-control" style="width:auto;padding:4px 8px;font-size:12px;">
+            <option>This Semester</option>
+          </select>
+        </div>
+        <canvas id="gradeChart" height="200"></canvas>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Recent Activity</div>
+        </div>
+        <div id="activity-list"></div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:20px;">
+      <!-- Mini Calendar -->
+      <div class="card">
+        <div class="card-title" style="margin-bottom:16px;">Calendar</div>
+        <div class="mini-calendar" id="mini-cal"></div>
+      </div>
+
+      <!-- Upcoming Deadlines -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Upcoming Deadlines</div>
+          <a href="assignments.html" class="btn btn-ghost btn-sm">All</a>
+        </div>
+        <div id="deadline-list"></div>
+      </div>
+
+      <!-- Notifications -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Notifications</div>
+          <a href="notifications.html" class="btn btn-ghost btn-sm">All</a>
+        </div>
+        <div class="notif-item">
+          <div class="notif-dot"></div>
+          <div>
+            <div class="notif-text">Final exam tips posted for AVM 204.A</div>
+            <div class="notif-time">2 hours ago</div>
+          </div>
+        </div>
+        <div class="notif-item">
+          <div class="notif-dot"></div>
+          <div>
+            <div class="notif-text">Assignment FMEA Classwork I graded: 100/100</div>
+            <div class="notif-time">Yesterday</div>
+          </div>
+        </div>
+        <div class="notif-item">
+          <div class="notif-dot read"></div>
+          <div>
+            <div class="notif-text">Attendance recorded for AVM 306.A</div>
+            <div class="notif-time">2 days ago</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div id="toast-container"></div>
+
+<script src="js/layout.js"></script>
+<script src="js/main.js"></script>
+<script src="js/dashboard.js"></script>
+<script>
+// Inject sidebar/topbar
+document.getElementById('sidebar-placeholder').innerHTML = getSidebar('dashboard.html');
+document.getElementById('topbar-placeholder').innerHTML = getTopbar('Dashboard', [{ label: 'Dashboard' }]);
+
+// Date
+document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+// Course progress
+const courses = [
+  { code: 'AVM 204', name: 'Airport Strategic Planning', progress: 78, color: '#1565c0' },
+  { code: 'AVM 306', name: 'Operations Management', progress: 62, color: '#c8102e' },
+  { code: 'AVM 402', name: 'Aviation Business Simulation', progress: 37, color: '#e91e8c' },
+  { code: 'MGMT 311', name: 'Project Management', progress: 55, color: '#2e7d32' },
+  { code: 'SCM 205', name: 'Supply Chain Management', progress: 90, color: '#f57c00' }
+];
+
+const cpList = document.getElementById('course-progress-list');
+cpList.innerHTML = courses.map(c => `
+  <div class="course-progress-item">
+    <div class="cpi-color" style="background:${c.color}"></div>
+    <div class="cpi-info">
+      <div class="cpi-name">${c.name}</div>
+      <div class="cpi-meta">
+        <span class="cpi-code">${c.code}</span>
+        <span class="cpi-pct">${c.progress}%</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${c.progress}%;background:${c.color}"></div></div>
+    </div>
+  </div>
+`).join('');
+
+// Grade chart
+const ctx = document.getElementById('gradeChart').getContext('2d');
+new Chart(ctx, {
+  type: 'radar',
+  data: {
+    labels: ['AVM 204', 'AVM 306', 'AVM 402', 'MGMT 311', 'SCM 205'],
+    datasets: [{
+      label: 'Your Score',
+      data: [82, 94, 83, 86, 92],
+      borderColor: '#c8102e',
+      backgroundColor: 'rgba(200,16,46,0.12)',
+      pointBackgroundColor: '#c8102e',
+      pointRadius: 4,
+      borderWidth: 2
+    }, {
+      label: 'Class Average',
+      data: [70, 75, 72, 74, 76],
+      borderColor: '#1565c0',
+      backgroundColor: 'rgba(21,101,192,0.08)',
+      pointBackgroundColor: '#1565c0',
+      pointRadius: 4,
+      borderWidth: 2
+    }]
+  },
+  options: {
+    responsive: true,
+    scales: {
+      r: {
+        min: 0, max: 100,
+        ticks: { color: '#555', stepSize: 25 },
+        grid: { color: '#2a2a2a' },
+        pointLabels: { color: '#888', font: { size: 11 } }
+      }
+    },
+    plugins: {
+      legend: { labels: { color: '#888', font: { size: 11 } } }
+    }
+  }
+});
+
+// Activity
+const activities = [
+  { icon: 'assignment', fa: 'fas fa-tasks', title: 'FMEA Classwork I Submitted', desc: 'AVM 306.A', time: '2h ago' },
+  { icon: 'grade', fa: 'fas fa-star', title: 'Project Charter Graded: 88/100', desc: 'MGMT 311.A', time: 'Yesterday' },
+  { icon: 'announcement', fa: 'fas fa-bullhorn', title: 'New Announcement: Final Exam Tips', desc: 'AVM 204.A', time: '2 days ago' },
+  { icon: 'assignment', fa: 'fas fa-file', title: 'Airport Master Plan Assignment Posted', desc: 'AVM 204.A', time: '3 days ago' },
+];
+document.getElementById('activity-list').innerHTML = activities.map(a => `
+  <div class="activity-item">
+    <div class="activity-icon ${a.icon}"><i class="${a.fa}"></i></div>
+    <div class="activity-body">
+      <div class="activity-title">${a.title}</div>
+      <div class="activity-desc">${a.desc}</div>
+    </div>
+    <div class="activity-time">${a.time}</div>
+  </div>
+`).join('');
+
+// Deadlines
+const deadlines = [
+  { title: 'FMEA Classwork II', course: 'AVM 306.A', days: 2, cls: 'days-red' },
+  { title: 'Airport Master Plan', course: 'AVM 204.A', days: 5, cls: 'days-orange' },
+  { title: 'Project Charter', course: 'MGMT 311.A', days: 8, cls: 'days-orange' },
+  { title: 'Business Sim Report', course: 'AVM 402.A', days: 15, cls: 'days-green' },
+];
+document.getElementById('deadline-list').innerHTML = deadlines.map(d => `
+  <div class="deadline-item">
+    <div class="deadline-left">
+      <div class="deadline-title">${d.title}</div>
+      <div class="deadline-course">${d.course}</div>
+    </div>
+    <div class="deadline-days ${d.cls}">${d.days}d</div>
+  </div>
+`).join('');
+
+// Mini Calendar
+function renderMiniCal() {
+  const now = new Date();
+  const year = now.getFullYear(), month = now.getMonth();
+  const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const dayNames = ['Mo','Tu','We','Th','Fr','Sa','Su'];
+  const first = new Date(year, month, 1).getDay();
+  const start = first === 0 ? 6 : first - 1;
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const daysInPrev = new Date(year, month, 0).getDate();
+  const eventDays = [12, 15, 18, 20, 25];
+
+  let html = `<div class="cal-header">
+    <button class="cal-nav"><i class="fas fa-chevron-left"></i></button>
+    <span class="cal-month">${monthNames[month]} ${year}</span>
+    <button class="cal-nav"><i class="fas fa-chevron-right"></i></button>
+  </div>
+  <div class="cal-grid">
+    ${dayNames.map(d => `<div class="cal-day-name">${d}</div>`).join('')}`;
+
+  for (let i = start - 1; i >= 0; i--) {
+    html += `<div class="cal-day other-month">${daysInPrev - i}</div>`;
+  }
+  for (let d = 1; d <= daysInMonth; d++) {
+    const isToday = d === now.getDate();
+    const hasEvent = eventDays.includes(d);
+    html += `<div class="cal-day ${isToday ? 'today' : ''} ${hasEvent && !isToday ? 'has-event' : ''}">${d}</div>`;
+  }
+
+  html += '</div>';
+  document.getElementById('mini-cal').innerHTML = html;
+}
+renderMiniCal();
+</script>
+</body>
+</html>

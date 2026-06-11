@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calendar - ÖZU.LMS</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/responsive.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+.cal-toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 20px; flex-wrap: wrap; gap: 12px;
+}
+.cal-nav-group { display: flex; align-items: center; gap: 8px; }
+.cal-nav-btn {
+  width: 34px; height: 34px;
+  background: var(--color-surface2); border: 1px solid var(--color-border);
+  border-radius: var(--radius); cursor: pointer; color: var(--color-text-muted);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; transition: all 0.15s;
+}
+.cal-nav-btn:hover { background: var(--color-surface3); color: var(--color-white); border-color: var(--color-primary); }
+.cal-month-title {
+  font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--color-white);
+  min-width: 200px; text-align: center;
+}
+.cal-view-btns { display: flex; gap: 4px; }
+.cal-view-btn {
+  padding: 6px 14px; background: var(--color-surface2); border: 1px solid var(--color-border);
+  border-radius: var(--radius); cursor: pointer; font-size: 12px; font-weight: 500;
+  color: var(--color-text-muted); transition: all 0.15s;
+}
+.cal-view-btn.active { background: var(--color-primary); border-color: var(--color-primary); color: white; }
+
+.full-cal { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; }
+.full-cal-header {
+  display: grid; grid-template-columns: repeat(7,1fr);
+  border-bottom: 1px solid var(--color-border);
+}
+.full-cal-dow {
+  padding: 12px 8px; text-align: center; font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.8px; color: var(--color-text-dim);
+}
+.full-cal-days { display: grid; grid-template-columns: repeat(7,1fr); }
+.full-cal-cell {
+  min-height: 100px; padding: 8px;
+  border-right: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+  cursor: pointer; transition: background 0.1s; position: relative;
+}
+.full-cal-cell:nth-child(7n) { border-right: none; }
+.full-cal-cell:hover { background: var(--color-surface2); }
+.full-cal-cell.today { background: rgba(200,16,46,0.06); }
+.full-cal-cell.other-month { opacity: 0.35; }
+.cell-date {
+  font-size: 13px; font-weight: 600; color: var(--color-text-muted);
+  width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  margin-bottom: 4px;
+}
+.cell-date.today-circle { background: var(--color-primary); color: white; }
+.event-pill {
+  font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 3px;
+  margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer;
+}
+.ev-red { background: rgba(200,16,46,0.2); color: #ef5350; }
+.ev-blue { background: rgba(21,101,192,0.2); color: #42a5f5; }
+.ev-pink { background: rgba(233,30,140,0.2); color: #ec407a; }
+.ev-green { background: rgba(46,125,50,0.2); color: #66bb6a; }
+.ev-orange { background: rgba(245,124,0,0.2); color: #ffa726; }
+.upcoming-event {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.upcoming-event:last-child { border-bottom: none; }
+.ev-date-box {
+  width: 44px; height: 44px; border-radius: var(--radius); flex-shrink: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-family: var(--font-display);
+}
+.ev-date-day { font-size: 18px; font-weight: 800; line-height: 1; }
+.ev-date-month { font-size: 9px; font-weight: 600; text-transform: uppercase; }
+</style>
+</head>
+<body>
+<div id="sidebar-placeholder"></div>
+<div id="topbar-placeholder"></div>
+<main class="main-content">
+  <div class="page-header animate-in" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+    <div>
+      <h1 class="page-title">Calendar</h1>
+      <p class="page-subtitle">Assignments, exams, events, and reminders</p>
+    </div>
+    <button class="btn btn-primary" data-modal="add-event-modal"><i class="fas fa-plus"></i> New Event</button>
+  </div>
+
+  <div class="cal-toolbar animate-in" style="animation-delay:0.05s;">
+    <div class="cal-nav-group">
+      <button class="cal-nav-btn" id="prev-month"><i class="fas fa-chevron-left"></i></button>
+      <div class="cal-month-title" id="cal-month-title"></div>
+      <button class="cal-nav-btn" id="next-month"><i class="fas fa-chevron-right"></i></button>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+      <select class="form-control" style="width:auto;padding:6px 10px;font-size:12px;" id="cal-course-filter">
+        <option value="">All courses</option>
+        <option>AVM 204.A</option>
+        <option>AVM 306.A</option>
+        <option>AVM 402.A</option>
+        <option>MGMT 311.A</option>
+        <option>SCM 205</option>
+      </select>
+      <button class="cal-nav-btn" onclick="goToday()" title="Today" style="width:auto;padding:0 12px;font-size:12px;font-weight:600;">Today</button>
+    </div>
+    <div class="cal-view-btns">
+      <button class="cal-view-btn active" id="view-month">Month</button>
+      <button class="cal-view-btn" id="view-week">Week</button>
+    </div>
+  </div>
+
+  <div class="grid-21 animate-in" style="animation-delay:0.1s;">
+    <div>
+      <div class="full-cal">
+        <div class="full-cal-header" id="cal-header"></div>
+        <div class="full-cal-days" id="cal-days"></div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Upcoming Events</div>
+        </div>
+        <div id="upcoming-list"></div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="margin-bottom:12px;">Legend</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;align-items:center;gap:8px;font-size:12px;"><div style="width:12px;height:12px;background:rgba(200,16,46,0.3);border-radius:2px;"></div> Assignment Due</div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:12px;"><div style="width:12px;height:12px;background:rgba(21,101,192,0.3);border-radius:2px;"></div> Exam</div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:12px;"><div style="width:12px;height:12px;background:rgba(233,30,140,0.3);border-radius:2px;"></div> Class Event</div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:12px;"><div style="width:12px;height:12px;background:rgba(46,125,50,0.3);border-radius:2px;"></div> Personal</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Add Event Modal -->
+<div class="modal-overlay" id="add-event-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Add New Event</div>
+      <button class="modal-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Event Title</label>
+        <input type="text" class="form-control" id="ev-title" placeholder="e.g. Study Session">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Date</label>
+        <input type="date" class="form-control" id="ev-date">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Category</label>
+        <select class="form-control" id="ev-cat">
+          <option value="ev-green">Personal</option>
+          <option value="ev-red">Assignment</option>
+          <option value="ev-blue">Exam</option>
+          <option value="ev-pink">Class Event</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Course (optional)</label>
+        <select class="form-control" id="ev-course">
+          <option value="">None</option>
+          <option>AVM 204.A</option>
+          <option>AVM 306.A</option>
+          <option>MGMT 311.A</option>
+          <option>SCM 205</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" style="width:100%;" onclick="addEvent()"><i class="fas fa-plus"></i> Add Event</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="js/layout.js"></script>
+<script src="js/main.js"></script>
+<script src="js/calendar.js"></script>
+<script>
+document.getElementById('sidebar-placeholder').innerHTML = getSidebar('calendar.html');
+document.getElementById('topbar-placeholder').innerHTML = getTopbar('Calendar', [{ label: 'Calendar' }]);
+
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const now = new Date();
+let curYear = now.getFullYear();
+let curMonth = now.getMonth();
+
+let EVENTS = [
+  { date: `${curYear}-06-03`, title: 'Writing Center Session', cls: 'ev-pink', course: '' },
+  { date: `${curYear}-06-11`, title: 'FMEA Classwork II Due', cls: 'ev-red', course: 'AVM 306.A' },
+  { date: `${curYear}-06-12`, title: 'Simulation Round 3', cls: 'ev-red', course: 'AVM 402.A' },
+  { date: `${curYear}-06-15`, title: 'Airport Master Plan Due', cls: 'ev-red', course: 'AVM 204.A' },
+  { date: `${curYear}-06-18`, title: 'Project Charter Due', cls: 'ev-red', course: 'MGMT 311.A' },
+  { date: `${curYear}-06-20`, title: 'AVM 204.A Final Exam', cls: 'ev-blue', course: 'AVM 204.A' },
+  { date: `${curYear}-06-22`, title: 'AVM 306.A Final Exam', cls: 'ev-blue', course: 'AVM 306.A' },
+  { date: `${curYear}-06-23`, title: 'MGMT Final Exam', cls: 'ev-blue', course: 'MGMT 311.A' },
+  { date: `${curYear}-06-25`, title: 'Business Sim Report Due', cls: 'ev-red', course: 'AVM 402.A' },
+  { date: `${curYear}-06-08`, title: 'Study Group - Operations', cls: 'ev-green', course: '' },
+];
+
+function pad(n) { return String(n).padStart(2,'0'); }
+function dateStr(y, m, d) { return `${y}-${pad(m+1)}-${pad(d)}`; }
+
+function renderCalendar() {
+  document.getElementById('cal-month-title').textContent = `${MONTHS[curMonth]} ${curYear}`;
+  document.getElementById('cal-header').innerHTML = DAYS.map(d => `<div class="full-cal-dow">${d}</div>`).join('');
+
+  const firstDay = new Date(curYear, curMonth, 1).getDay();
+  const startOffset = firstDay === 0 ? 6 : firstDay - 1;
+  const daysInMonth = new Date(curYear, curMonth+1, 0).getDate();
+  const daysInPrev = new Date(curYear, curMonth, 0).getDate();
+
+  let cells = '';
+  for (let i = startOffset - 1; i >= 0; i--) {
+    const d = daysInPrev - i;
+    cells += `<div class="full-cal-cell other-month"><div class="cell-date">${d}</div></div>`;
+  }
+  for (let d = 1; d <= daysInMonth; d++) {
+    const isToday = d === now.getDate() && curMonth === now.getMonth() && curYear === now.getFullYear();
+    const ds = dateStr(curYear, curMonth, d);
+    const eventsOnDay = EVENTS.filter(e => e.date === ds);
+    const eventPills = eventsOnDay.slice(0,3).map(e => `<div class="event-pill ${e.cls}" title="${e.title}">${e.title}</div>`).join('');
+    const more = eventsOnDay.length > 3 ? `<div style="font-size:10px;color:var(--color-text-dim);">+${eventsOnDay.length-3} more</div>` : '';
+    cells += `<div class="full-cal-cell ${isToday?'today':''}" onclick="showDayEvents('${ds}')">
+      <div class="cell-date ${isToday?'today-circle':''}">${d}</div>
+      ${eventPills}${more}
+    </div>`;
+  }
+  const totalCells = startOffset + daysInMonth;
+  const trailing = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+  for (let d = 1; d <= trailing; d++) {
+    cells += `<div class="full-cal-cell other-month"><div class="cell-date">${d}</div></div>`;
+  }
+  document.getElementById('cal-days').innerHTML = cells;
+  renderUpcoming();
+}
+
+function renderUpcoming() {
+  const todayStr = dateStr(now.getFullYear(), now.getMonth(), now.getDate());
+  const upcoming = EVENTS.filter(e => e.date >= todayStr).sort((a,b) => a.date.localeCompare(b.date)).slice(0,6);
+  document.getElementById('upcoming-list').innerHTML = upcoming.map(e => {
+    const d = new Date(e.date);
+    return `
+    <div class="upcoming-event">
+      <div class="ev-date-box" style="background:var(--color-surface2);color:var(--color-primary);">
+        <div class="ev-date-day">${d.getDate()}</div>
+        <div class="ev-date-month">${MONTHS[d.getMonth()].slice(0,3)}</div>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:600;color:var(--color-white);margin-bottom:2px;">${e.title}</div>
+        <div style="font-size:11px;color:var(--color-text-muted);">${e.course || 'Personal'}</div>
+      </div>
+      <span class="event-pill ${e.cls}" style="align-self:center;">${e.cls==='ev-red'?'Due':e.cls==='ev-blue'?'Exam':e.cls==='ev-pink'?'Event':'Personal'}</span>
+    </div>`;
+  }).join('') || '<div class="empty-state"><i class="fas fa-calendar-check"></i><p>No upcoming events</p></div>';
+}
+
+function showDayEvents(ds) {
+  const evs = EVENTS.filter(e => e.date === ds);
+  if (!evs.length) return;
+  showToast(evs.map(e=>e.title).join(' | '), 'info');
+}
+
+function goToday() {
+  curYear = now.getFullYear();
+  curMonth = now.getMonth();
+  renderCalendar();
+}
+
+document.getElementById('prev-month').addEventListener('click', () => {
+  curMonth--; if (curMonth < 0) { curMonth = 11; curYear--; }
+  renderCalendar();
+});
+document.getElementById('next-month').addEventListener('click', () => {
+  curMonth++; if (curMonth > 11) { curMonth = 0; curYear++; }
+  renderCalendar();
+});
+
+function addEvent() {
+  const title = document.getElementById('ev-title').value.trim();
+  const date = document.getElementById('ev-date').value;
+  const cls = document.getElementById('ev-cat').value;
+  const course = document.getElementById('ev-course').value;
+  if (!title || !date) { showToast('Please fill in title and date', 'error'); return; }
+  EVENTS.push({ date, title, cls, course });
+  closeModal('add-event-modal');
+  renderCalendar();
+  showToast('Event added!', 'success');
+}
+
+document.getElementById('ev-date').value = dateStr(now.getFullYear(), now.getMonth(), now.getDate());
+renderCalendar();
+</script>
+</body>
+</html>

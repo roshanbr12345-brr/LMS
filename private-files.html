@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Private Files - ÖZU.LMS</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/responsive.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+.file-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(160px,1fr)); gap: 14px; }
+.file-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+.file-card:hover { border-color: rgba(200,16,46,0.3); transform: translateY(-2px); box-shadow: var(--shadow); }
+.file-card.selected { border-color: var(--color-primary); background: rgba(200,16,46,0.06); }
+.file-icon { font-size: 36px; margin-bottom: 10px; display: block; }
+.file-name { font-size: 12px; font-weight: 600; color: var(--color-text); margin-bottom: 4px; word-break: break-word; }
+.file-meta { font-size: 10px; color: var(--color-text-dim); }
+.file-check {
+  position: absolute; top: 8px; right: 8px;
+  width: 18px; height: 18px; border-radius: 4px;
+  background: var(--color-primary); color: white;
+  display: none; align-items: center; justify-content: center;
+  font-size: 10px;
+}
+.file-card.selected .file-check { display: flex; }
+.folder-card { background: rgba(245,124,0,0.08); border-color: rgba(245,124,0,0.2); }
+.folder-card:hover { border-color: rgba(245,124,0,0.5); }
+.storage-bar-wrap { margin-bottom: 6px; }
+.storage-used { font-size: 22px; font-weight: 700; font-family: var(--font-display); color: var(--color-white); }
+.storage-total { font-size: 12px; color: var(--color-text-muted); }
+.breadcrumb-path { display: flex; align-items: center; gap: 6px; font-size: 13px; margin-bottom: 20px; }
+.path-item { color: var(--color-text-muted); cursor: pointer; }
+.path-item:hover { color: var(--color-white); }
+.path-item.current { color: var(--color-white); font-weight: 600; }
+.path-sep { color: var(--color-text-dim); }
+</style>
+</head>
+<body>
+<div id="sidebar-placeholder"></div>
+<div id="topbar-placeholder"></div>
+<main class="main-content">
+  <div class="page-header animate-in" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+    <div>
+      <h1 class="page-title">Private Files</h1>
+      <p class="page-subtitle">Your personal file storage area</p>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-ghost btn-sm" data-modal="new-folder-modal"><i class="fas fa-folder-plus"></i> New Folder</button>
+      <button class="btn btn-primary btn-sm" onclick="document.getElementById('file-upload-input').click()"><i class="fas fa-upload"></i> Upload Files</button>
+      <input type="file" id="file-upload-input" style="display:none;" multiple onchange="handleUpload(this)">
+    </div>
+  </div>
+
+  <div class="grid-21 animate-in" style="animation-delay:0.05s;">
+    <div>
+      <!-- Toolbar -->
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap;">
+        <div class="search-box" style="flex:1;max-width:300px;">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Search files..." id="file-search" oninput="filterFiles()">
+        </div>
+        <select class="form-control" id="file-type-filter" style="width:auto;" onchange="filterFiles()">
+          <option value="">All types</option>
+          <option value="pdf">PDF</option>
+          <option value="docx">Word</option>
+          <option value="ppt">PowerPoint</option>
+          <option value="img">Images</option>
+          <option value="folder">Folders</option>
+        </select>
+        <div style="display:flex;gap:4px;">
+          <button class="view-btn active" id="grid-btn" onclick="setView('grid',this)"><i class="fas fa-th"></i></button>
+          <button class="view-btn" id="list-btn" onclick="setView('list',this)"><i class="fas fa-list"></i></button>
+        </div>
+      </div>
+
+      <!-- Selection bar -->
+      <div id="selection-bar" style="display:none;background:rgba(200,16,46,0.1);border:1px solid rgba(200,16,46,0.3);border-radius:var(--radius);padding:10px 14px;margin-bottom:14px;display:none;align-items:center;gap:12px;">
+        <span id="sel-count" style="font-size:13px;font-weight:600;color:var(--color-white);">0 selected</span>
+        <div style="margin-left:auto;display:flex;gap:6px;">
+          <button class="btn btn-ghost btn-sm" onclick="showToast('Downloading...','success')"><i class="fas fa-download"></i> Download</button>
+          <button class="btn btn-primary btn-sm" onclick="deleteSelected()"><i class="fas fa-trash"></i> Delete</button>
+          <button class="btn btn-ghost btn-sm" onclick="clearSelection()"><i class="fas fa-times"></i> Cancel</button>
+        </div>
+      </div>
+
+      <!-- Breadcrumb -->
+      <div class="breadcrumb-path">
+        <span class="path-item current"><i class="fas fa-home"></i> My Files</span>
+      </div>
+
+      <!-- File Grid -->
+      <div class="file-grid" id="file-grid"></div>
+    </div>
+
+    <!-- Sidebar info -->
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      <!-- Storage -->
+      <div class="card">
+        <div class="card-title" style="margin-bottom:14px;">Storage</div>
+        <div class="storage-bar-wrap">
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+            <span class="storage-used">2.4 GB</span>
+            <span class="storage-total">/ 10 GB used</span>
+          </div>
+          <div class="progress-bar" style="height:10px;">
+            <div class="progress-fill gradient" style="width:24%;height:10px;border-radius:5px;"></div>
+          </div>
+          <div style="font-size:11px;color:var(--color-text-dim);margin-top:6px;">7.6 GB remaining</div>
+        </div>
+        <div class="divider"></div>
+        <div style="display:flex;flex-direction:column;gap:8px;font-size:12px;">
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--color-text-muted);">Documents</span><span>1.1 GB</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--color-text-muted);">Images</span><span>0.8 GB</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--color-text-muted);">Videos</span><span>0.4 GB</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--color-text-muted);">Other</span><span>0.1 GB</span></div>
+        </div>
+      </div>
+
+      <!-- Recent activity -->
+      <div class="card">
+        <div class="card-title" style="margin-bottom:12px;">Recent Activity</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="font-size:12px;"><div style="color:var(--color-text);font-weight:500;">Project_Charter_Final.docx</div><div style="color:var(--color-text-dim);">Uploaded 2 days ago</div></div>
+          <div style="font-size:12px;"><div style="color:var(--color-text);font-weight:500;">Research_Notes_AVM204.pdf</div><div style="color:var(--color-text-dim);">Modified 3 days ago</div></div>
+          <div style="font-size:12px;"><div style="color:var(--color-text);font-weight:500;">Semester_Schedule.pdf</div><div style="color:var(--color-text-dim);">Uploaded 1 week ago</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- New Folder Modal -->
+<div class="modal-overlay" id="new-folder-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Create New Folder</div>
+      <button class="modal-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Folder Name</label>
+        <input type="text" class="form-control" id="folder-name" placeholder="e.g. AVM 204 Notes">
+      </div>
+      <button class="btn btn-primary" style="width:100%;" onclick="createFolder()"><i class="fas fa-folder-plus"></i> Create Folder</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="js/layout.js"></script>
+<script src="js/main.js"></script>
+<script>
+document.getElementById('sidebar-placeholder').innerHTML = getSidebar('private-files.html');
+document.getElementById('topbar-placeholder').innerHTML = getTopbar('Private Files', [{ label: 'Private Files' }]);
+
+const fileIcons = {
+  pdf: { icon: 'fas fa-file-pdf', color: '#ef5350', bg: 'rgba(200,16,46,0.15)' },
+  docx: { icon: 'fas fa-file-word', color: '#42a5f5', bg: 'rgba(21,101,192,0.15)' },
+  ppt: { icon: 'fas fa-file-powerpoint', color: '#ffa726', bg: 'rgba(245,124,0,0.15)' },
+  img: { icon: 'fas fa-file-image', color: '#ec407a', bg: 'rgba(233,30,140,0.15)' },
+  zip: { icon: 'fas fa-file-archive', color: '#888', bg: 'rgba(255,255,255,0.06)' },
+  folder: { icon: 'fas fa-folder', color: '#ffa726', bg: 'rgba(245,124,0,0.1)' },
+};
+
+let FILES = [
+  { id:1, name:'AVM 204 Notes', type:'folder', size:'—', date:'Jun 1, 2026', isFolder:true },
+  { id:2, name:'AVM 306 Materials', type:'folder', size:'—', date:'May 28, 2026', isFolder:true },
+  { id:3, name:'Project_Charter_Final.docx', type:'docx', size:'248 KB', date:'Jun 9, 2026', isFolder:false },
+  { id:4, name:'Research_Notes_AVM204.pdf', type:'pdf', size:'1.2 MB', date:'Jun 8, 2026', isFolder:false },
+  { id:5, name:'Semester_Schedule.pdf', type:'pdf', size:'320 KB', date:'Jun 5, 2026', isFolder:false },
+  { id:6, name:'Airport_Presentation.ppt', type:'ppt', size:'8.4 MB', date:'Jun 3, 2026', isFolder:false },
+  { id:7, name:'Campus_Map.img', type:'img', size:'2.1 MB', date:'May 30, 2026', isFolder:false },
+  { id:8, name:'Study_Group_Photo.img', type:'img', size:'3.8 MB', date:'May 25, 2026', isFolder:false },
+  { id:9, name:'Case_Study_SCM.pdf', type:'pdf', size:'5.6 MB', date:'May 22, 2026', isFolder:false },
+  { id:10, name:'Assignment_Templates.zip', type:'zip', size:'12 MB', date:'May 15, 2026', isFolder:false },
+];
+
+let selectedIds = new Set();
+let currentView = 'grid';
+
+function setView(v, btn) {
+  currentView = v;
+  document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderFiles(getFilteredFiles());
+}
+
+function getFilteredFiles() {
+  const q = document.getElementById('file-search').value.toLowerCase();
+  const type = document.getElementById('file-type-filter').value;
+  let list = FILES;
+  if (q) list = list.filter(f => f.name.toLowerCase().includes(q));
+  if (type) list = list.filter(f => f.type === type);
+  return list;
+}
+
+function renderFiles(list) {
+  const grid = document.getElementById('file-grid');
+  if (!list.length) {
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><i class="fas fa-folder-open"></i><p>No files found.</p></div>';
+    return;
+  }
+  if (currentView === 'grid') {
+    grid.style.display = 'grid';
+    grid.innerHTML = list.map(f => {
+      const fi = fileIcons[f.type] || fileIcons.zip;
+      return `
+        <div class="file-card ${f.isFolder?'folder-card':''} ${selectedIds.has(f.id)?'selected':''}" onclick="toggleSelect(${f.id})">
+          <div class="file-check"><i class="fas fa-check"></i></div>
+          <i class="${fi.icon} file-icon" style="color:${fi.color};"></i>
+          <div class="file-name">${f.name}</div>
+          <div class="file-meta">${f.size} &bull; ${f.date}</div>
+          <div style="margin-top:10px;display:flex;justify-content:center;gap:6px;" onclick="event.stopPropagation()">
+            ${!f.isFolder ? `<button class="btn btn-ghost btn-sm" onclick="showToast('Downloading ${f.name}...','success')" title="Download"><i class="fas fa-download"></i></button>` : ''}
+            <button class="btn btn-ghost btn-sm" onclick="deleteFile(${f.id})" title="Delete"><i class="fas fa-trash"></i></button>
+          </div>
+        </div>`;
+    }).join('');
+  } else {
+    grid.style.display = 'block';
+    grid.innerHTML = `<div class="table-wrap"><table><thead><tr><th>Name</th><th>Type</th><th>Size</th><th>Modified</th><th>Actions</th></tr></thead><tbody>
+      ${list.map(f => {
+        const fi = fileIcons[f.type] || fileIcons.zip;
+        return `<tr>
+          <td style="display:flex;align-items:center;gap:8px;"><i class="${fi.icon}" style="color:${fi.color};font-size:15px;"></i>${f.name}</td>
+          <td><span class="chip chip-gray">${f.type.toUpperCase()}</span></td>
+          <td>${f.size}</td>
+          <td style="color:var(--color-text-muted);">${f.date}</td>
+          <td><div style="display:flex;gap:6px;">
+            ${!f.isFolder?`<button class="btn btn-ghost btn-sm" onclick="showToast('Downloading...','success')"><i class="fas fa-download"></i></button>`:''}
+            <button class="btn btn-ghost btn-sm" onclick="deleteFile(${f.id})"><i class="fas fa-trash"></i></button>
+          </div></td>
+        </tr>`;
+      }).join('')}
+    </tbody></table></div>`;
+  }
+}
+
+function toggleSelect(id) {
+  if (selectedIds.has(id)) selectedIds.delete(id);
+  else selectedIds.add(id);
+  updateSelectionBar();
+  renderFiles(getFilteredFiles());
+}
+
+function updateSelectionBar() {
+  const bar = document.getElementById('selection-bar');
+  if (selectedIds.size > 0) {
+    bar.style.display = 'flex';
+    document.getElementById('sel-count').textContent = `${selectedIds.size} selected`;
+  } else {
+    bar.style.display = 'none';
+  }
+}
+
+function clearSelection() { selectedIds.clear(); updateSelectionBar(); renderFiles(getFilteredFiles()); }
+
+function deleteSelected() {
+  FILES = FILES.filter(f => !selectedIds.has(f.id));
+  selectedIds.clear();
+  updateSelectionBar();
+  renderFiles(getFilteredFiles());
+  showToast('Files deleted', 'success');
+}
+
+function deleteFile(id) {
+  FILES = FILES.filter(f => f.id !== id);
+  selectedIds.delete(id);
+  updateSelectionBar();
+  renderFiles(getFilteredFiles());
+  showToast('File deleted', 'success');
+}
+
+function filterFiles() { renderFiles(getFilteredFiles()); }
+
+function handleUpload(input) {
+  Array.from(input.files).forEach(file => {
+    const ext = file.name.split('.').pop().toLowerCase();
+    const type = ['pdf'].includes(ext)?'pdf':['docx','doc'].includes(ext)?'docx':['ppt','pptx'].includes(ext)?'ppt':['jpg','jpeg','png','gif'].includes(ext)?'img':'zip';
+    FILES.unshift({ id: Date.now()+Math.random(), name: file.name, type, size: (file.size/1024/1024).toFixed(1)+' MB', date: 'Just now', isFolder: false });
+  });
+  renderFiles(getFilteredFiles());
+  showToast(`${input.files.length} file(s) uploaded!`, 'success');
+  input.value = '';
+}
+
+function createFolder() {
+  const name = document.getElementById('folder-name').value.trim();
+  if (!name) { showToast('Please enter a folder name', 'error'); return; }
+  FILES.unshift({ id: Date.now(), name, type: 'folder', size: '—', date: 'Just now', isFolder: true });
+  closeModal('new-folder-modal');
+  renderFiles(getFilteredFiles());
+  showToast(`Folder "${name}" created!`, 'success');
+}
+
+renderFiles(FILES);
+</script>
+</body>
+</html>

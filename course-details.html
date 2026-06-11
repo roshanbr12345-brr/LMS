@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Course Details - ÖZU.LMS</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/responsive.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+.course-banner {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  border-radius: var(--radius-lg);
+  margin-bottom: 24px;
+  display: block;
+}
+.course-banner-placeholder {
+  width: 100%;
+  height: 220px;
+  border-radius: var(--radius-lg);
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  color: rgba(255,255,255,0.1);
+}
+.course-meta-bar {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+  padding: 16px 20px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+.course-meta-item { display: flex; align-items: center; gap: 8px; }
+.course-meta-item i { color: var(--color-primary); font-size: 14px; }
+.course-meta-item .meta-label { font-size: 11px; color: var(--color-text-dim); }
+.course-meta-item .meta-value { font-size: 13px; color: var(--color-text); font-weight: 500; }
+
+.week-section {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+.week-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--color-surface2);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+}
+.week-header:hover { background: var(--color-surface3); }
+.week-header .week-title { font-weight: 600; font-size: 13px; color: var(--color-text); }
+.week-content { padding: 12px 16px; display: none; }
+.week-content.open { display: block; }
+.resource-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.resource-item:last-child { border-bottom: none; }
+.resource-icon { width: 32px; height: 32px; border-radius: var(--radius); display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+.resource-icon.pdf { background: rgba(200,16,46,0.15); color: var(--color-primary); }
+.resource-icon.ppt { background: rgba(245,124,0,0.15); color: #ffa726; }
+.resource-icon.video { background: rgba(21,101,192,0.15); color: #42a5f5; }
+.resource-name { flex: 1; font-size: 13px; color: var(--color-text); }
+.announcement-card {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--color-border);
+}
+.announcement-card:last-child { border-bottom: none; }
+.announcement-date { font-size: 11px; color: var(--color-text-dim); margin-bottom: 4px; }
+.announcement-title { font-size: 14px; font-weight: 600; color: var(--color-primary); margin-bottom: 4px; cursor: pointer; }
+.announcement-title:hover { text-decoration: underline; }
+.announcement-author { font-size: 11px; color: var(--color-text-muted); }
+</style>
+</head>
+<body>
+<div id="sidebar-placeholder"></div>
+<div id="topbar-placeholder"></div>
+
+<main class="main-content" id="main-content-area">
+  <div id="course-content" class="animate-in"></div>
+</main>
+
+<div id="toast-container"></div>
+<script src="js/layout.js"></script>
+<script src="js/main.js"></script>
+<script>
+const COURSE_DATA = {
+  AVM204: {
+    code: 'AVM 204.A', title: 'Airport Strategic Planning and Design', semester: 'Spring 2025/26',
+    instructor: 'Assoc. Prof. Sena Bicici & Assoc. Prof. Leyla Adiloglü Yalcinkaya', credits: 3,
+    progress: 78, color: '#1565c0',
+    img: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1200&h=300&fit=crop',
+    desc: 'This course is different from your other courses, as it is a branded and industry-collaborative course developed in close cooperation with IGA Istanbul Airport. Throughout the semester, IGA industry representatives will join classes as guest speakers, sharing real-world experience directly connected to course content.',
+    weeks: [
+      { title: '9 February - 15 February', resources: [{ type: 'pdf', name: 'AVM 204 - Lecture Slides I' }] },
+      { title: '16 February - 22 February', resources: [{ type: 'pdf', name: 'AVM 204 - Lecture Slides II: Airport Systems' }] },
+      { title: '23 February - 1 March', resources: [{ type: 'pdf', name: 'AVM 204 - Guest Speaker Notes: Master Plan' }] },
+    ],
+    announcements: [
+      { date: '2 June 2026, 5:47 PM', title: 'Tips for the Final Exam', author: 'Baris Orak', content: 'Focus on chapters 4-8 and review airport case studies discussed in class.' },
+      { date: '15 May 2026', title: 'Guest Speaker: Omer Faruk Ekmekcioğlu', author: 'Assoc. Prof. Sena Bicici', content: 'Deputy Manager for Master Plan Management at IGA Istanbul Airport will cover the Strategic Planning Process.' },
+    ]
+  },
+  AVM306: {
+    code: 'AVM 306.A', title: 'Operations Management in Aviation', semester: 'Spring 2025/26',
+    instructor: 'Assoc. Prof. Leyla Adiloglü Yalcinkaya', credits: 3,
+    progress: 62, color: '#c8102e',
+    img: 'https://images.unsplash.com/photo-1540962351504-03099e0a754b?w=1200&h=300&fit=crop',
+    desc: 'Welcome to AVM 306 - Operations Management in Aviation. This course explores the critical role of operations management in ensuring efficiency, safety, and service quality in the aviation industry.',
+    weeks: [
+      { title: '9 February - 15 February', resources: [{ type: 'pdf', name: 'AVM 306 - Lecture Slides I' }] },
+      { title: '16 February - 22 February', resources: [{ type: 'pdf', name: 'No class' }] },
+      { title: '23 February - 1 March', resources: [{ type: 'pdf', name: 'Service Economy, Air Transport Industry Overview' }] },
+    ],
+    announcements: [
+      { date: '28 May 2026', title: 'Guest Speaker - Revenue Management', author: 'Assoc. Prof. Leyla', content: 'Special guest speaker from Turkish Airlines next week covering Revenue and Yield Management.' }
+    ]
+  }
+};
+
+const params = new URLSearchParams(window.location.search);
+const courseId = params.get('id') || 'AVM204';
+const course = COURSE_DATA[courseId] || COURSE_DATA['AVM204'];
+
+document.title = `${course.code} - ÖZU.LMS`;
+document.getElementById('sidebar-placeholder').innerHTML = getSidebar('courses.html');
+document.getElementById('topbar-placeholder').innerHTML = getTopbar(course.code, [
+  { href: 'courses.html', label: 'My Courses' },
+  { label: course.code }
+]);
+
+document.getElementById('course-content').innerHTML = `
+  <img src="${course.img}" alt="${course.title}" class="course-banner" onerror="this.style.display='none'">
+
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;flex-wrap:wrap;gap:12px;">
+    <div>
+      <h1 style="font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--color-white);margin-bottom:4px;">${course.code}: ${course.title} (${course.semester})</h1>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <a href="grades.html" class="btn btn-outline btn-sm"><i class="fas fa-chart-bar"></i> Grades</a>
+      <a href="activities.html" class="btn btn-outline btn-sm"><i class="fas fa-bolt"></i> Activities</a>
+    </div>
+  </div>
+
+  <div class="course-meta-bar">
+    <div class="course-meta-item">
+      <i class="fas fa-user-tie"></i>
+      <div><div class="meta-label">Instructor</div><div class="meta-value">${course.instructor}</div></div>
+    </div>
+    <div class="course-meta-item">
+      <i class="fas fa-calendar-alt"></i>
+      <div><div class="meta-label">Semester</div><div class="meta-value">${course.semester}</div></div>
+    </div>
+    <div class="course-meta-item">
+      <i class="fas fa-graduation-cap"></i>
+      <div><div class="meta-label">Credits</div><div class="meta-value">${course.credits} ECTS</div></div>
+    </div>
+    <div class="course-meta-item">
+      <i class="fas fa-tasks"></i>
+      <div><div class="meta-label">Progress</div><div class="meta-value">${course.progress}% Complete</div></div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="tab-course">Course</button>
+    <button class="tab-btn" data-tab="tab-grades">Grades</button>
+    <button class="tab-btn" data-tab="tab-activities">Activities</button>
+    <button class="tab-btn" data-tab="tab-competencies">Competencies</button>
+  </div>
+
+  <div id="tab-course" class="tab-content active">
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-header"><div class="card-title">Latest Announcements</div></div>
+      ${course.announcements.map(a => `
+        <div class="announcement-card">
+          <div class="announcement-date">${a.date}</div>
+          <div class="announcement-title">${a.title}</div>
+          <div style="font-size:13px;color:var(--color-text-muted);margin:6px 0;">${a.content}</div>
+          <div class="announcement-author">${a.author}</div>
+        </div>
+      `).join('')}
+    </div>
+
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-header">
+        <div class="card-title">General</div>
+        <button class="btn btn-ghost btn-sm">Collapse all</button>
+      </div>
+      <div style="display:flex;gap:16px;align-items:flex-start;margin-bottom:16px;flex-wrap:wrap;">
+        <img src="${course.img}" alt="" style="width:200px;height:130px;object-fit:cover;border-radius:var(--radius);flex-shrink:0;" onerror="this.style.display='none'">
+        <div style="flex:1;min-width:200px;">
+          <p style="font-size:13px;color:var(--color-text);line-height:1.7;">${course.desc}</p>
+          <p style="margin-top:12px;font-size:13px;color:var(--color-text-muted);">Once again, welcome to <strong style="color:var(--color-white);">${course.code}</strong> and we look forward to an inspiring and productive semester!</p>
+        </div>
+      </div>
+      <div class="resource-item">
+        <div class="resource-icon pdf"><i class="fas fa-file-pdf"></i></div>
+        <div class="resource-name">${course.code.replace('.A','')} Syllabus 2025-26</div>
+        <span class="chip chip-red">PDF</span>
+        <button class="btn btn-ghost btn-sm"><i class="fas fa-download"></i></button>
+      </div>
+      <div class="resource-item">
+        <div class="resource-icon" style="background:rgba(233,30,140,0.15);color:var(--color-pink);"><i class="fas fa-user-check"></i></div>
+        <div class="resource-name">Attendance</div>
+        <a href="attendance.html" class="btn btn-outline btn-sm">View</a>
+      </div>
+      <div class="resource-item">
+        <div class="resource-icon" style="background:rgba(255,255,255,0.06);color:var(--color-text-muted);"><i class="fas fa-bullhorn"></i></div>
+        <div class="resource-name">Announcements</div>
+        <a href="announcements.html" class="btn btn-outline btn-sm">View</a>
+      </div>
+    </div>
+
+    ${course.weeks.map((w, i) => `
+      <div class="week-section">
+        <div class="week-header" onclick="this.nextElementSibling.classList.toggle('open');this.querySelector('.fa-chevron-down').style.transform=this.nextElementSibling.classList.contains('open')?'rotate(180deg)':''">
+          <span class="week-title">${w.title}</span>
+          <i class="fas fa-chevron-down" style="font-size:12px;color:var(--color-text-dim);transition:transform 0.2s;"></i>
+        </div>
+        <div class="week-content ${i === 0 ? 'open' : ''}">
+          ${w.resources.map(r => `
+            <div class="resource-item">
+              <div class="resource-icon ${r.type}"><i class="fas fa-file-${r.type}"></i></div>
+              <div class="resource-name">${r.name}</div>
+              <span class="chip chip-red">${r.type.toUpperCase()}</span>
+              <button class="btn btn-ghost btn-sm" onclick="showToast('Download started','success')"><i class="fas fa-download"></i></button>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `).join('')}
+  </div>
+
+  <div id="tab-grades" class="tab-content">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">VT &nbsp; Vigneshrajan Theyagarajan</div>
+        <select class="form-control" style="width:auto;padding:5px 10px;font-size:12px;"><option>User report</option></select>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Grade Item</th><th>Grade</th><th>Range</th><th>Percentage</th></tr></thead>
+          <tbody>
+            <tr><td colspan="4" style="font-weight:600;color:var(--color-white);background:var(--color-surface2);">${course.code}: ${course.title}</td></tr>
+            <tr><td><span class="chip chip-gray" style="font-size:10px;">MANUAL ITEM</span> Midterm</td><td>75.00</td><td>0-100</td><td><span class="chip chip-orange">75.00%</span></td></tr>
+            <tr><td><span class="chip chip-gray" style="font-size:10px;">MANUAL ITEM</span> Attendance</td><td>100.00</td><td>0-100</td><td><span class="chip chip-green">100.00%</span></td></tr>
+            <tr><td><span class="chip chip-gray" style="font-size:10px;">MANUAL ITEM</span> Classwork I</td><td>100.00</td><td>0-100</td><td><span class="chip chip-green">100.00%</span></td></tr>
+            <tr><td><span class="chip chip-gray" style="font-size:10px;">MANUAL ITEM</span> Classwork II</td><td>100.00</td><td>0-100</td><td><span class="chip chip-green">100.00%</span></td></tr>
+            <tr><td><span class="chip chip-gray" style="font-size:10px;">MANUAL ITEM</span> Final Exam</td><td>95.00</td><td>0-100</td><td><span class="chip chip-green">95.00%</span></td></tr>
+            <tr style="font-weight:700;"><td><span class="chip chip-blue" style="font-size:10px;">AGGREGATION</span> Course Total</td><td>-</td><td>0-100</td><td>-</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-activities" class="tab-content">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Activities</div></div>
+      <p style="font-size:13px;color:var(--color-text-muted);margin-bottom:16px;">An overview of all activities in the course, with dates and other information.</p>
+      <div style="border:1px solid var(--color-border);border-radius:var(--radius);overflow:hidden;margin-bottom:8px;">
+        <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;background:var(--color-surface2);" onclick="window.location.href='attendance.html'">
+          <span style="color:var(--color-primary);font-size:12px;"><i class="fas fa-chevron-right"></i></span>
+          <i class="fas fa-user-check" style="color:var(--color-pink);"></i>
+          <span style="font-weight:600;font-size:13px;">Attendances</span>
+        </div>
+      </div>
+      <div style="border:1px solid var(--color-border);border-radius:var(--radius);overflow:hidden;">
+        <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;background:var(--color-surface2);" onclick="window.location.href='materials.html'">
+          <span style="color:var(--color-primary);font-size:12px;"><i class="fas fa-chevron-right"></i></span>
+          <i class="fas fa-file-alt" style="color:var(--color-text-muted);"></i>
+          <span style="font-weight:600;font-size:13px;">Resources</span>
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:20px;"><a href="courses.html" class="btn btn-primary">Back to Course</a></div>
+    </div>
+  </div>
+
+  <div id="tab-competencies" class="tab-content">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Course Competencies</div>
+        <span class="chip chip-gray">No filters applied</span>
+      </div>
+      <div style="background:rgba(21,101,192,0.08);border:1px solid rgba(21,101,192,0.2);border-radius:var(--radius);padding:14px;color:var(--color-text-muted);font-size:13px;margin-bottom:16px;">
+        No competencies have been linked to this course.
+      </div>
+      <div style="text-align:center;"><a href="courses.html" class="btn btn-primary">Back to Course</a></div>
+    </div>
+  </div>
+`;
+
+initTabs();
+</script>
+</body>
+</html>

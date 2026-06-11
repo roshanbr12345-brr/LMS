@@ -1,0 +1,144 @@
+<!-- File: courses.html -->
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Courses - ÖZU.LMS</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/responsive.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+.course-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+.course-card:hover { border-color: rgba(200,16,46,0.3); transform: translateY(-2px); box-shadow: var(--shadow); }
+.course-banner {
+  width: 100%;
+  height: 140px;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-pink));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  color: rgba(255,255,255,0.2);
+  position: relative;
+  overflow: hidden;
+}
+.course-banner::before {
+  content: '';
+  position: absolute;
+  width: 200px; height: 200px;
+  background: radial-gradient(circle, rgba(255,255,255,0.1), transparent);
+  right: -50px; top: -50px;
+}
+.course-body {
+  padding: 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.course-code { font-size: 11px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--color-text-dim); margin-bottom: 4px; }
+.course-title { font-size: 15px; font-weight: 700; color: var(--color-white); margin-bottom: 2px; }
+.course-instructor { font-size: 11px; color: var(--color-text-muted); margin-bottom: 12px; }
+.course-progress { flex: 1; }
+.course-progress-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--color-text-dim); margin-bottom: 4px; }
+.course-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,0.04);
+}
+.course-status { font-size: 10px; }
+</style>
+</head>
+<body>
+<div id="sidebar-placeholder"></div>
+<div id="topbar-placeholder"></div>
+<main class="main-content">
+  <div class="page-header animate-in" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+    <div>
+      <h1 class="page-title">My Courses</h1>
+      <p class="page-subtitle">Spring 2025/26 semester courses</p>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <select class="form-control" id="course-filter" style="width:auto;" onchange="filterCourses()">
+        <option value="">All Courses</option>
+        <option value="active">Active</option>
+        <option value="completed">Completed</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="stat-cards animate-in" style="animation-delay:0.05s;margin-bottom:24px;">
+    <div class="stat-card red"><div class="stat-icon red"><i class="fas fa-book-open"></i></div><div class="stat-value">5</div><div class="stat-label">Total Courses</div><div class="stat-change up"><i class="fas fa-check"></i> Spring 2025/26</div></div>
+    <div class="stat-card blue"><div class="stat-icon blue"><i class="fas fa-tasks"></i></div><div class="stat-value">4</div><div class="stat-label">In Progress</div><div class="stat-change up"><i class="fas fa-arrow-up"></i> On track</div></div>
+    <div class="stat-card pink"><div class="stat-icon pink"><i class="fas fa-chart-bar"></i></div><div class="stat-value">88%</div><div class="stat-label">Avg Grade</div><div class="stat-change up"><i class="fas fa-check"></i> Good standing</div></div>
+    <div class="stat-card white"><div class="stat-icon white"><i class="fas fa-user-check"></i></div><div class="stat-value">92%</div><div class="stat-label">Attendance</div><div class="stat-change up"><i class="fas fa-arrow-up"></i> Above minimum</div></div>
+  </div>
+
+  <div id="courses-grid" class="animate-in" style="animation-delay:0.1s;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;"></div>
+</main>
+<div id="toast-container"></div>
+<script src="js/layout.js"></script>
+<script src="js/main.js"></script>
+<script>
+document.getElementById('sidebar-placeholder').innerHTML = getSidebar('courses.html');
+document.getElementById('topbar-placeholder').innerHTML = getTopbar('My Courses', [{ label: 'My Courses' }]);
+
+const COURSES = [
+  { code:'AVM 204.A', title:'Airport Strategic Planning and Design', instructor:'Assoc. Prof. Sena Bicici', progress:78, semester:'Spring 2025/26', credits:3, status:'active', color:'#1565c0' },
+  { code:'AVM 306.A', title:'Operations Management in Aviation', instructor:'Assoc. Prof. Leyla Adiloglü', progress:62, semester:'Spring 2025/26', credits:3, status:'active', color:'#c8102e' },
+  { code:'AVM 402.A', title:'Aviation Business Simulation', instructor:'Dr. Mehmet Yilmaz', progress:37, semester:'Spring 2025/26', credits:3, status:'active', color:'#e91e8c' },
+  { code:'MGMT 311.A', title:'Project Management', instructor:'Dr. Ali Kaya', progress:55, semester:'Spring 2025/26', credits:3, status:'active', color:'#2e7d32' },
+  { code:'SCM 205', title:'Supply Chain Management', instructor:'Prof. Hakan Demir', progress:90, semester:'Spring 2025/26', credits:3, status:'active', color:'#f57c00' },
+];
+
+function renderCourses(list) {
+  document.getElementById('courses-grid').innerHTML = list.map(c => `
+    <a href="course-details.html?id=${c.code.split(' ')[0].slice(0,6)}" class="course-card" style="text-decoration:none;">
+      <div class="course-banner" style="background:linear-gradient(135deg,${c.color}dd,${c.color}99);">
+        <i class="fas fa-book-open"></i>
+      </div>
+      <div class="course-body">
+        <div class="course-code">${c.code}</div>
+        <div class="course-title">${c.title}</div>
+        <div class="course-instructor"><i class="fas fa-user-tie" style="margin-right:4px;"></i>${c.instructor}</div>
+        <div class="course-progress">
+          <div class="course-progress-label">
+            <span>Progress</span>
+            <span style="font-weight:700;color:${c.progress >= 80 ? '#66bb6a' : c.progress >= 60 ? '#ffa726' : '#ef5350'};">${c.progress}%</span>
+          </div>
+          <div class="progress-bar" style="height:6px;">
+            <div class="progress-fill" style="width:${c.progress}%;background:${c.progress >= 80 ? '#66bb6a' : c.progress >= 60 ? '#ffa726' : '#ef5350'};border-radius:3px;"></div>
+          </div>
+        </div>
+        <div class="course-footer">
+          <span class="course-status"><i class="fas fa-circle" style="font-size:6px;color:#66bb6a;margin-right:4px;"></i>Active</span>
+          <span style="font-size:10px;color:var(--color-text-dim);margin-left:auto;">${c.credits} ECTS</span>
+        </div>
+      </div>
+    </a>
+  `).join('');
+}
+
+function filterCourses() {
+  const filter = document.getElementById('course-filter').value;
+  let list = COURSES;
+  if (filter === 'completed') list = COURSES.filter(c => c.progress === 100);
+  else if (filter === 'active') list = COURSES.filter(c => c.progress < 100);
+  renderCourses(list);
+}
+
+renderCourses(COURSES);
+</script>
+</body>
+</html>

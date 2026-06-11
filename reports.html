@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reports - ÖZU.LMS</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/responsive.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+.report-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: all 0.2s;
+}
+.report-card:hover { border-color: rgba(200,16,46,0.3); }
+.report-card-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--color-border);
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+}
+.report-card-body { padding: 20px; }
+.export-btns { display: flex; gap: 6px; }
+.kpi-row { display: grid; grid-template-columns: repeat(auto-fill,minmax(130px,1fr)); gap: 12px; margin-bottom: 16px; }
+.kpi-box { background: var(--color-surface2); border: 1px solid var(--color-border); border-radius: var(--radius); padding: 12px; text-align: center; }
+.kpi-val { font-family: var(--font-display); font-size: 22px; font-weight: 700; color: var(--color-white); }
+.kpi-lbl { font-size: 11px; color: var(--color-text-muted); margin-top: 2px; }
+</style>
+</head>
+<body>
+<div id="sidebar-placeholder"></div>
+<div id="topbar-placeholder"></div>
+<main class="main-content">
+  <div class="page-header animate-in">
+    <h1 class="page-title">Reports</h1>
+    <p class="page-subtitle">Attendance, grades, courses, and activity reports</p>
+  </div>
+
+  <div class="tabs animate-in" style="animation-delay:0.05s;">
+    <button class="tab-btn active" data-tab="rpt-attendance">Attendance</button>
+    <button class="tab-btn" data-tab="rpt-grades">Grades</button>
+    <button class="tab-btn" data-tab="rpt-courses">Courses</button>
+    <button class="tab-btn" data-tab="rpt-activity">Activity</button>
+  </div>
+
+  <!-- Attendance Report -->
+  <div id="rpt-attendance" class="tab-content active animate-in" style="animation-delay:0.1s;">
+    <div class="report-card">
+      <div class="report-card-header">
+        <div class="card-title">Attendance Report - Spring 2025/26</div>
+        <div class="export-btns">
+          <button class="btn btn-ghost btn-sm" onclick="showToast('Exported PDF','success')"><i class="fas fa-file-pdf"></i> PDF</button>
+          <button class="btn btn-ghost btn-sm" onclick="showToast('Exported Excel','success')"><i class="fas fa-file-excel"></i> Excel</button>
+          <button class="btn btn-ghost btn-sm" onclick="showToast('Exported CSV','success')"><i class="fas fa-file-csv"></i> CSV</button>
+        </div>
+      </div>
+      <div class="report-card-body">
+        <div class="kpi-row">
+          <div class="kpi-box"><div class="kpi-val" style="color:#66bb6a;">92%</div><div class="kpi-lbl">Overall Rate</div></div>
+          <div class="kpi-box"><div class="kpi-val">40</div><div class="kpi-lbl">Total Classes</div></div>
+          <div class="kpi-box"><div class="kpi-val" style="color:#66bb6a;">34</div><div class="kpi-lbl">Present</div></div>
+          <div class="kpi-box"><div class="kpi-val" style="color:#ef5350;">6</div><div class="kpi-lbl">Absent</div></div>
+          <div class="kpi-box"><div class="kpi-val" style="color:#ffa726;">0</div><div class="kpi-lbl">Late</div></div>
+        </div>
+        <canvas id="rptAttChart" height="140"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Grades Report -->
+  <div id="rpt-grades" class="tab-content animate-in">
+    <div class="report-card">
+      <div class="report-card-header">
+        <div class="card-title">Grade Report - Spring 2025/26</div>
+        <div class="export-btns">
+          <button class="btn btn-ghost btn-sm" onclick="showToast('Exported PDF','success')"><i class="fas fa-file-pdf"></i> PDF</button>
+          <button class="btn btn-ghost btn-sm" onclick="showToast('Exported Excel','success')"><i class="fas fa-file-excel"></i> Excel</button>
+          <button class="btn btn-ghost btn-sm" onclick="showToast('Exported CSV','success')"><i class="fas fa-file-csv"></i> CSV</button>
+        </div>
+      </div>
+      <div class="report-card-body">
+        <div class="kpi-row">
+          <div class="kpi-box"><div class="kpi-val" style="color:var(--color-primary);">3.7</div><div class="kpi-lbl">Current GPA</div></div>
+          <div class="kpi-box"><div class="kpi-val">5</div><div class="kpi-lbl">Courses</div></div>
+          <div class="kpi-box"><div class="kpi-val" style="color:#66bb6a;">88%</div><div class="kpi-lbl">Avg Score</div></div>
+          <div class="kpi-box"><div class="kpi-val">15</div><div class="kpi-lbl">Credits</div></div>
+        </div>
+        <canvas id="rptGradeChart" height="140"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Courses Report -->
+  <div id="rpt-courses" class="tab-content animate-in">
+    <div class="report-card">
+      <div class="report-card-header">
+        <div class="card-title">Course Progress Report</div>
+        <div class="export-btns">
+          <button class="btn btn-ghost btn-sm" onclick="showToast('Exported PDF','success')"><i class="fas fa-file-pdf"></i> PDF</button>
+          <button class="btn btn-ghost btn-sm" onclick="showToast('Exported Excel','success')"><i class="fas fa-file-excel"></i> Excel</button>
+        </div>
+      </div>
+      <div class="report-card-body">
+        <div class="kpi-row" style="margin-bottom:20px;">
+          <div class="kpi-box"><div class="kpi-val">5</div><div class="kpi-lbl">Active Courses</div></div>
+          <div class="kpi-box"><div class="kpi-val" style="color:#66bb6a;">1</div><div class="kpi-lbl">Completed</div></div>
+          <div class="kpi-box"><div class="kpi-val" style="color:#ffa726;">4</div><div class="kpi-lbl">In Progress</div></div>
+          <div class="kpi-box"><div class="kpi-val">62%</div><div class="kpi-lbl">Avg Progress</div></div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Course</th><th>Instructor</th><th>Credits</th><th>Progress</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>AVM 204.A</td><td>Assoc. Prof. Sena Bicici</td><td>3</td><td><div style="display:flex;align-items:center;gap:8px;"><div class="progress-bar" style="width:80px;"><div class="progress-fill" style="width:78%;background:#1565c0;"></div></div>78%</div></td><td><span class="chip chip-blue">In Progress</span></td></tr>
+              <tr><td>AVM 306.A</td><td>Assoc. Prof. Leyla</td><td>3</td><td><div style="display:flex;align-items:center;gap:8px;"><div class="progress-bar" style="width:80px;"><div class="progress-fill" style="width:62%;background:#c8102e;"></div></div>62%</div></td><td><span class="chip chip-blue">In Progress</span></td></tr>
+              <tr><td>AVM 402.A</td><td>Dr. Mehmet Yilmaz</td><td>3</td><td><div style="display:flex;align-items:center;gap:8px;"><div class="progress-bar" style="width:80px;"><div class="progress-fill" style="width:37%;background:#e91e8c;"></div></div>37%</div></td><td><span class="chip chip-blue">In Progress</span></td></tr>
+              <tr><td>MGMT 311.A</td><td>Dr. Ali Kaya</td><td>3</td><td><div style="display:flex;align-items:center;gap:8px;"><div class="progress-bar" style="width:80px;"><div class="progress-fill" style="width:55%;background:#2e7d32;"></div></div>55%</div></td><td><span class="chip chip-blue">In Progress</span></td></tr>
+              <tr><td>SCM 205</td><td>Prof. Hakan Demir</td><td>3</td><td><div style="display:flex;align-items:center;gap:8px;"><div class="progress-bar" style="width:80px;"><div class="progress-fill" style="width:90%;background:#f57c00;"></div></div>90%</div></td><td><span class="chip chip-green">Near Complete</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Activity Report -->
+  <div id="rpt-activity" class="tab-content animate-in">
+    <div class="report-card">
+      <div class="report-card-header">
+        <div class="card-title">Activity Report</div>
+        <div class="export-btns">
+          <button class="btn btn-ghost btn-sm" onclick="showToast('Exported PDF','success')"><i class="fas fa-file-pdf"></i> PDF</button>
+          <button class="btn btn-ghost btn-sm" onclick="showToast('Exported Excel','success')"><i class="fas fa-file-excel"></i> Excel</button>
+        </div>
+      </div>
+      <div class="report-card-body">
+        <div class="kpi-row" style="margin-bottom:20px;">
+          <div class="kpi-box"><div class="kpi-val">12</div><div class="kpi-lbl">Total Activities</div></div>
+          <div class="kpi-box"><div class="kpi-val" style="color:#66bb6a;">8</div><div class="kpi-lbl">Completed</div></div>
+          <div class="kpi-box"><div class="kpi-val" style="color:#ffa726;">4</div><div class="kpi-lbl">Pending</div></div>
+          <div class="kpi-box"><div class="kpi-val" style="color:#66bb6a;">67%</div><div class="kpi-lbl">Completion</div></div>
+        </div>
+        <canvas id="rptActivityChart" height="140"></canvas>
+      </div>
+    </div>
+  </div>
+</main>
+<div id="toast-container"></div>
+<script src="js/layout.js"></script>
+<script src="js/main.js"></script>
+<script>
+document.getElementById('sidebar-placeholder').innerHTML = getSidebar('reports.html');
+document.getElementById('topbar-placeholder').innerHTML = getTopbar('Reports', [{ label: 'Reports' }]);
+initTabs();
+
+// Attendance Chart
+new Chart(document.getElementById('rptAttChart').getContext('2d'), {
+  type: 'bar',
+  data: {
+    labels: ['AVM 204.A','AVM 306.A','AVM 402.A','MGMT 311.A','SCM 205'],
+    datasets: [
+      { label: 'Present', data: [8,10,7,6,9], backgroundColor: '#2e7d32', borderRadius: 4 },
+      { label: 'Absent', data: [1,0,2,2,1], backgroundColor: '#c8102e', borderRadius: 4 }
+    ]
+  },
+  options: { responsive:true, plugins:{legend:{labels:{color:'#888',font:{size:11}}}}, scales:{ x:{ticks:{color:'#666'},grid:{color:'#1e1e1e'}}, y:{ticks:{color:'#666'},grid:{color:'#1e1e1e'},max:12} } }
+});
+
+// Grades Chart
+new Chart(document.getElementById('rptGradeChart').getContext('2d'), {
+  type: 'line',
+  data: {
+    labels: ['AVM 204.A','AVM 306.A','AVM 402.A','MGMT 311.A','SCM 205'],
+    datasets: [{
+      label: 'Average Score', data: [87, 94, 83, 86, 92],
+      borderColor: '#c8102e', backgroundColor: 'rgba(200,16,46,0.1)',
+      pointBackgroundColor: '#c8102e', pointRadius: 5, fill: true, tension: 0.3
+    }]
+  },
+  options: { responsive:true, plugins:{legend:{labels:{color:'#888',font:{size:11}}}}, scales:{ x:{ticks:{color:'#666'},grid:{color:'#1e1e1e'}}, y:{min:60,max:100,ticks:{color:'#666'},grid:{color:'#1e1e1e'}} } }
+});
+
+// Activity Chart
+new Chart(document.getElementById('rptActivityChart').getContext('2d'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Completed','Pending'],
+    datasets: [{ data:[8,4], backgroundColor:['#2e7d32','#c8102e'], borderWidth:0 }]
+  },
+  options: { cutout:'65%', plugins:{legend:{labels:{color:'#888',font:{size:11}}}} }
+});
+</script>
+</body>
+</html>

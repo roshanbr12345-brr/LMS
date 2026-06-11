@@ -1,0 +1,264 @@
+<!-- File: grades.html -->
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grades - ÖZU.LMS</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/responsive.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+.grade-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.grade-row:last-child { border-bottom: none; }
+.grade-item { flex: 1; min-width: 0; }
+.grade-item-name { font-size: 13px; font-weight: 600; color: var(--color-text); margin-bottom: 2px; }
+.grade-item-meta { font-size: 11px; color: var(--color-text-muted); }
+.grade-value { font-size: 16px; font-weight: 700; color: #66bb6a; text-align: right; min-width: 60px; }
+.grade-value.low { color: #ef5350; }
+.grade-value.medium { color: #ffa726; }
+.grade-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+.grade-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--color-text-dim);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.grade-section-title::after { content:''; flex:1; height:1px; background:var(--color-border); }
+</style>
+</head>
+<body>
+<div id="sidebar-placeholder"></div>
+<div id="topbar-placeholder"></div>
+<main class="main-content">
+  <div class="page-header animate-in">
+    <h1 class="page-title">Grades</h1>
+    <p class="page-subtitle">Spring 2025/26 semester grades and assessments</p>
+  </div>
+
+  <div class="stat-cards animate-in" style="animation-delay:0.05s;margin-bottom:24px;">
+    <div class="stat-card red">
+      <div class="stat-icon red"><i class="fas fa-star"></i></div>
+      <div class="stat-value">3.7</div>
+      <div class="stat-label">Current GPA</div>
+      <div class="stat-change up"><i class="fas fa-check"></i> Good standing</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="stat-icon blue"><i class="fas fa-chart-line"></i></div>
+      <div class="stat-value">88%</div>
+      <div class="stat-label">Avg Grade</div>
+      <div class="stat-change up"><i class="fas fa-arrow-up"></i> Above class avg</div>
+    </div>
+    <div class="stat-card pink">
+      <div class="stat-icon pink"><i class="fas fa-trophy"></i></div>
+      <div class="stat-value">5</div>
+      <div class="stat-label">Courses Graded</div>
+      <div class="stat-change up"><i class="fas fa-check"></i> In progress</div>
+    </div>
+    <div class="stat-card white">
+      <div class="stat-icon white"><i class="fas fa-tasks"></i></div>
+      <div class="stat-value">87</div>
+      <div class="stat-label">Total Credits</div>
+      <div class="stat-change up"><i class="fas fa-arrow-up"></i> 33 earned</div>
+    </div>
+  </div>
+
+  <div class="grid-21 animate-in" style="animation-delay:0.1s;">
+    <div>
+      <!-- Grades by course -->
+      <div class="grade-card">
+        <div class="grade-section-title">Course Grades</div>
+        <div id="grades-list"></div>
+      </div>
+
+      <!-- Detailed breakdown -->
+      <div class="grade-card">
+        <div class="card-header">
+          <div class="card-title">Detailed Grade Report</div>
+          <select class="form-control" id="grade-course-filter" style="width:auto;padding:5px 10px;font-size:12px;" onchange="filterGradeDetails()">
+            <option value="">All Courses</option>
+            <option value="AVM 204.A">AVM 204.A</option>
+            <option value="AVM 306.A">AVM 306.A</option>
+            <option value="AVM 402.A">AVM 402.A</option>
+            <option value="MGMT 311.A">MGMT 311.A</option>
+            <option value="SCM 205">SCM 205</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table id="grade-details-table">
+            <thead><tr><th>Assignment / Assessment</th><th>Grade</th><th>Range</th><th>%</th></tr></thead>
+            <tbody id="grade-details"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:20px;">
+      <!-- Grade distribution -->
+      <div class="card">
+        <div class="card-title" style="margin-bottom:14px;">Grade Distribution</div>
+        <canvas id="gradeDistChart" height="200"></canvas>
+      </div>
+
+      <!-- Performance trend -->
+      <div class="card">
+        <div class="card-title" style="margin-bottom:14px;">Performance Trend</div>
+        <canvas id="perfTrendChart" height="200"></canvas>
+      </div>
+    </div>
+  </div>
+</main>
+<div id="toast-container"></div>
+<script src="js/layout.js"></script>
+<script src="js/main.js"></script>
+<script>
+document.getElementById('sidebar-placeholder').innerHTML = getSidebar('grades.html');
+document.getElementById('topbar-placeholder').innerHTML = getTopbar('Grades', [{ label: 'Grades' }]);
+
+const courseGrades = [
+  { code:'AVM 204.A', name:'Airport Strategic Planning', grade:82, gradeCode:'B+', color:'#1565c0' },
+  { code:'AVM 306.A', name:'Operations Management', grade:94, gradeCode:'A', color:'#c8102e' },
+  { code:'AVM 402.A', name:'Aviation Business Simulation', grade:83, gradeCode:'B+', color:'#e91e8c' },
+  { code:'MGMT 311.A', name:'Project Management', grade:86, gradeCode:'B+', color:'#2e7d32' },
+  { code:'SCM 205', name:'Supply Chain Management', grade:92, gradeCode:'A', color:'#f57c00' },
+];
+
+const detailedGrades = {
+  'AVM 204.A': [
+    { name:'Midterm Exam', grade:75, range:'0-100', pct:75 },
+    { name:'Attendance', grade:100, range:'0-100', pct:100 },
+    { name:'Classwork I', grade:100, range:'0-100', pct:100 },
+    { name:'Classwork II', grade:100, range:'0-100', pct:100 },
+    { name:'Final Exam', grade:95, range:'0-100', pct:95 },
+  ],
+  'AVM 306.A': [
+    { name:'Midterm Quiz', grade:92, range:'0-100', pct:92 },
+    { name:'Attendance', grade:100, range:'0-100', pct:100 },
+    { name:'FMEA I', grade:100, range:'0-100', pct:100 },
+    { name:'FMEA II', grade:100, range:'0-100', pct:100 },
+    { name:'Final Project', grade:90, range:'0-100', pct:90 },
+  ],
+  'AVM 402.A': [
+    { name:'Round 1 Decision', grade:85, range:'0-100', pct:85 },
+    { name:'Round 2 Decision', grade:80, range:'0-100', pct:80 },
+    { name:'Round 3 Decision', grade:85, range:'0-100', pct:85 },
+    { name:'Final Report', grade:84, range:'0-100', pct:84 },
+  ],
+  'MGMT 311.A': [
+    { name:'Project Charter', grade:88, range:'0-100', pct:88 },
+    { name:'Milestone Review', grade:95, range:'0-100', pct:95 },
+    { name:'Team Participation', grade:85, range:'0-100', pct:85 },
+    { name:'Final Presentation', grade:85, range:'0-100', pct:85 },
+  ],
+  'SCM 205': [
+    { name:'Case Study I', grade:90, range:'0-100', pct:90 },
+    { name:'Midterm', grade:95, range:'0-100', pct:95 },
+    { name:'Case Study II', grade:92, range:'0-100', pct:92 },
+    { name:'Final Exam', grade:91, range:'0-100', pct:91 },
+  ],
+};
+
+document.getElementById('grades-list').innerHTML = courseGrades.map(c => `
+  <div class="grade-row">
+    <div style="display:flex;align-items:center;gap:10px;flex:1;">
+      <div style="width:28px;height:28px;border-radius:6px;background:${c.color};opacity:0.2;"></div>
+      <div class="grade-item">
+        <div class="grade-item-name">${c.code}</div>
+        <div class="grade-item-meta">${c.name}</div>
+      </div>
+    </div>
+    <div class="grade-value ${c.grade >= 90 ? '' : c.grade >= 80 ? 'medium' : 'low'}">${c.grade}%</div>
+    <span class="chip ${c.grade >= 90 ? 'chip-green' : c.grade >= 80 ? 'chip-orange' : 'chip-red'}" style="font-size:10px;margin-left:8px;">${c.gradeCode}</span>
+  </div>
+`).join('');
+
+function filterGradeDetails() {
+  const course = document.getElementById('grade-course-filter').value;
+  const details = course ? detailedGrades[course] : Object.values(detailedGrades).flat();
+  document.getElementById('grade-details').innerHTML = details.map(d => `
+    <tr>
+      <td style="font-weight:500;">${d.name}</td>
+      <td><strong style="color:#66bb6a;">${d.grade}</strong></td>
+      <td>${d.range}</td>
+      <td><span class="chip ${d.pct >= 90 ? 'chip-green' : d.pct >= 80 ? 'chip-orange' : 'chip-red'}">${d.pct}%</span></td>
+    </tr>
+  `).join('');
+}
+
+filterGradeDetails();
+
+// Distribution chart
+new Chart(document.getElementById('gradeDistChart').getContext('2d'), {
+  type: 'doughnut',
+  data: {
+    labels: ['A (90-100)', 'B (80-89)', 'C (70-79)', 'D (60-69)', 'F (<60)'],
+    datasets: [{
+      data: [2, 3, 0, 0, 0],
+      backgroundColor: ['#66bb6a', '#ffa726', '#ef5350', '#ef5350', '#c8102e'],
+      borderWidth: 0
+    }]
+  },
+  options: {
+    cutout: '60%',
+    plugins: {
+      legend: { position: 'bottom', labels: { color: '#888', font: { size: 10 }, padding: 12 } }
+    }
+  }
+});
+
+// Trend chart
+new Chart(document.getElementById('perfTrendChart').getContext('2d'), {
+  type: 'line',
+  data: {
+    labels: ['AVM 204', 'AVM 306', 'AVM 402', 'MGMT 311', 'SCM 205'],
+    datasets: [{
+      label: 'Your Performance',
+      data: [82, 94, 83, 86, 92],
+      borderColor: '#c8102e',
+      backgroundColor: 'rgba(200,16,46,0.1)',
+      pointBackgroundColor: '#c8102e',
+      pointRadius: 5,
+      fill: true,
+      tension: 0.3
+    }, {
+      label: 'Class Average',
+      data: [75, 78, 76, 80, 84],
+      borderColor: '#1565c0',
+      backgroundColor: 'rgba(21,101,192,0.08)',
+      pointBackgroundColor: '#1565c0',
+      pointRadius: 4,
+      fill: true,
+      tension: 0.3,
+      borderDash: [4, 4]
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { labels: { color: '#888', font: { size: 11 } } } },
+    scales: {
+      x: { ticks: { color: '#666' }, grid: { color: '#2a2a2a' } },
+      y: { min: 60, max: 100, ticks: { color: '#666' }, grid: { color: '#2a2a2a' } }
+    }
+  }
+});
+</script>
+</body>
+</html>

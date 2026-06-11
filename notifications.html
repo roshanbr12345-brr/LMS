@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notifications - ÖZU.LMS</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/responsive.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+.notif-card {
+  display: flex; gap: 14px; align-items: flex-start;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  margin-bottom: 10px;
+  transition: all 0.15s;
+  cursor: pointer;
+}
+.notif-card.unread { border-left: 3px solid var(--color-primary); background: rgba(200,16,46,0.04); }
+.notif-card:hover { box-shadow: var(--shadow); }
+.notif-avatar {
+  width: 40px; height: 40px; border-radius: var(--radius);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; flex-shrink: 0;
+}
+.notif-content { flex: 1; min-width: 0; }
+.notif-title { font-weight: 600; font-size: 13.5px; color: var(--color-white); margin-bottom: 3px; }
+.notif-desc { font-size: 12px; color: var(--color-text-muted); margin-bottom: 6px; line-height: 1.5; }
+.notif-footer { display: flex; align-items: center; gap: 10px; }
+.notif-time-label { font-size: 11px; color: var(--color-text-dim); }
+.notif-actions { display: flex; gap: 6px; }
+.filter-bar { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+</style>
+</head>
+<body>
+<div id="sidebar-placeholder"></div>
+<div id="topbar-placeholder"></div>
+<main class="main-content">
+  <div class="page-header animate-in" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+    <div>
+      <h1 class="page-title">Notifications</h1>
+      <p class="page-subtitle">Assignment reminders, grade updates, and announcements</p>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="markAllRead()"><i class="fas fa-check-double"></i> Mark all as read</button>
+  </div>
+
+  <div class="filter-bar animate-in" style="animation-delay:0.05s;">
+    <div class="filter-chips">
+      <div class="filter-chip active" data-filter="all" onclick="filterNotifs('all',this)">All</div>
+      <div class="filter-chip" data-filter="unread" onclick="filterNotifs('unread',this)">Unread <span class="chip chip-red" style="font-size:10px;padding:1px 6px;">3</span></div>
+      <div class="filter-chip" data-filter="assignment" onclick="filterNotifs('assignment',this)">Assignments</div>
+      <div class="filter-chip" data-filter="grade" onclick="filterNotifs('grade',this)">Grades</div>
+      <div class="filter-chip" data-filter="announcement" onclick="filterNotifs('announcement',this)">Announcements</div>
+      <div class="filter-chip" data-filter="attendance" onclick="filterNotifs('attendance',this)">Attendance</div>
+    </div>
+  </div>
+
+  <div id="notif-list" class="animate-in" style="animation-delay:0.1s;"></div>
+</main>
+<div id="toast-container"></div>
+<script src="js/layout.js"></script>
+<script src="js/main.js"></script>
+<script>
+document.getElementById('sidebar-placeholder').innerHTML = getSidebar('notifications.html');
+document.getElementById('topbar-placeholder').innerHTML = getTopbar('Notifications', [{ label: 'Notifications' }]);
+
+let NOTIFICATIONS = [
+  { id:1, type:'announcement', unread:true, icon:'fas fa-bullhorn', iconBg:'rgba(200,16,46,0.15)', iconColor:'var(--color-primary)', title:'Tips for the Final Exam - AVM 204.A', desc:'Baris Orak posted new announcement: Focus on chapters 4-8 and review the airport case studies discussed in class.', time:'2 hours ago', course:'AVM 204.A', action:'View Announcement', link:'announcements.html' },
+  { id:2, type:'grade', unread:true, icon:'fas fa-star', iconBg:'rgba(46,125,50,0.15)', iconColor:'#66bb6a', title:'Assignment Graded: FMEA Classwork I', desc:'Your submission for FMEA Classwork I (AVM 306.A) has been graded. Score: 100/100.', time:'Yesterday, 3:45 PM', course:'AVM 306.A', action:'View Grade', link:'grades.html' },
+  { id:3, type:'assignment', unread:true, icon:'fas fa-tasks', iconBg:'rgba(245,124,0,0.15)', iconColor:'#ffa726', title:'Assignment Due Soon: Airport Master Plan Analysis', desc:'Your assignment "Airport Master Plan Analysis" for AVM 204.A is due in 4 days on June 15, 2026.', time:'2 days ago', course:'AVM 204.A', action:'View Assignment', link:'assignments.html' },
+  { id:4, type:'attendance', unread:false, icon:'fas fa-user-check', iconBg:'rgba(233,30,140,0.15)', iconColor:'var(--color-pink)', title:'Attendance Recorded - AVM 306.A', desc:'Your attendance has been recorded for the AVM 306.A class on June 9, 2026 (Week 14 - Review Session).', time:'2 days ago', course:'AVM 306.A', action:'View Attendance', link:'attendance.html' },
+  { id:5, type:'announcement', unread:false, icon:'fas fa-university', iconBg:'rgba(21,101,192,0.15)', iconColor:'#42a5f5', title:'Final Exam Schedule Published', desc:'The final exam schedule for Spring 2025/26 has been published. Check your individual exam slots carefully.', time:'Jun 7, 2026', course:'University', action:'View Announcements', link:'announcements.html' },
+  { id:6, type:'grade', unread:false, icon:'fas fa-chart-bar', iconBg:'rgba(46,125,50,0.15)', iconColor:'#66bb6a', title:'Grade Updated: Project Charter - MGMT 311.A', desc:'Your Project Charter assignment has been graded: 88/100. Feedback available in the assignment page.', time:'Jun 5, 2026', course:'MGMT 311.A', action:'View Grade', link:'grades.html' },
+  { id:7, type:'assignment', unread:false, icon:'fas fa-file-upload', iconBg:'rgba(200,16,46,0.15)', iconColor:'var(--color-primary)', title:'New Assignment Posted: Six Sigma Classwork II', desc:'A new assignment "Six Sigma Classwork II" has been posted for AVM 306.A. Due: June 20, 2026.', time:'Jun 4, 2026', course:'AVM 306.A', action:'View Assignment', link:'assignments.html' },
+  { id:8, type:'attendance', unread:false, icon:'fas fa-exclamation-triangle', iconBg:'rgba(245,124,0,0.15)', iconColor:'#ffa726', title:'Attendance Warning - AVM 402.A', desc:'Your attendance in AVM 402.A is at 78%. Minimum required attendance is 70%. Please attend upcoming classes.', time:'Jun 2, 2026', course:'AVM 402.A', action:'View Attendance', link:'attendance.html' },
+];
+
+function renderNotifs(list) {
+  if (!list.length) {
+    document.getElementById('notif-list').innerHTML = '<div class="empty-state"><i class="fas fa-bell-slash"></i><p>No notifications found.</p></div>';
+    return;
+  }
+  document.getElementById('notif-list').innerHTML = list.map(n => `
+    <div class="notif-card ${n.unread ? 'unread' : ''}" id="notif-${n.id}">
+      <div class="notif-avatar" style="background:${n.iconBg};color:${n.iconColor};"><i class="${n.icon}"></i></div>
+      <div class="notif-content">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+          <div class="notif-title">${n.title}</div>
+          ${n.unread ? '<span class="notif-dot" style="width:8px;height:8px;border-radius:50%;background:var(--color-primary);flex-shrink:0;margin-top:6px;"></span>' : ''}
+        </div>
+        <div class="notif-desc">${n.desc}</div>
+        <div class="notif-footer">
+          <span class="chip chip-gray" style="font-size:10px;">${n.course}</span>
+          <span class="notif-time-label"><i class="fas fa-clock" style="font-size:10px;"></i> ${n.time}</span>
+          <div class="notif-actions" style="margin-left:auto;">
+            <a href="${n.link}" class="btn btn-primary btn-sm">${n.action}</a>
+            <button class="btn btn-ghost btn-sm" onclick="dismissNotif(${n.id})" title="Dismiss"><i class="fas fa-times"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterNotifs(type, el) {
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  let list = NOTIFICATIONS;
+  if (type === 'unread') list = NOTIFICATIONS.filter(n => n.unread);
+  else if (type !== 'all') list = NOTIFICATIONS.filter(n => n.type === type);
+  renderNotifs(list);
+}
+
+function dismissNotif(id) {
+  NOTIFICATIONS = NOTIFICATIONS.filter(n => n.id !== id);
+  renderNotifs(NOTIFICATIONS);
+  showToast('Notification dismissed', 'info');
+}
+
+function markAllRead() {
+  NOTIFICATIONS.forEach(n => n.unread = false);
+  renderNotifs(NOTIFICATIONS);
+  showToast('All notifications marked as read', 'success');
+}
+
+renderNotifs(NOTIFICATIONS);
+</script>
+</body>
+</html>

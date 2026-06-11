@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Materials - ÖZU.LMS</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/responsive.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+.material-card {
+  display: flex; gap: 14px; align-items: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  transition: all 0.15s;
+}
+.material-card:hover { border-color: rgba(200,16,46,0.3); box-shadow: var(--shadow); }
+.mat-icon {
+  width: 46px; height: 46px; border-radius: var(--radius);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 800; flex-shrink: 0;
+  font-family: var(--font-display);
+}
+.mat-pdf { background: rgba(200,16,46,0.15); color: var(--color-primary); }
+.mat-ppt { background: rgba(245,124,0,0.15); color: #ffa726; }
+.mat-docx { background: rgba(21,101,192,0.15); color: #42a5f5; }
+.mat-zip { background: rgba(255,255,255,0.06); color: var(--color-text-muted); }
+.mat-video { background: rgba(233,30,140,0.15); color: var(--color-pink); }
+.mat-info { flex: 1; min-width: 0; }
+.mat-name { font-weight: 600; font-size: 14px; color: var(--color-white); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mat-meta { font-size: 12px; color: var(--color-text-muted); }
+.mat-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.section-label {
+  font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+  color: var(--color-text-dim); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+}
+.section-label::after { content:''; flex:1; height:1px; background:var(--color-border); }
+</style>
+</head>
+<body>
+<div id="sidebar-placeholder"></div>
+<div id="topbar-placeholder"></div>
+<main class="main-content">
+  <div class="page-header animate-in" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+    <div>
+      <h1 class="page-title">Learning Materials</h1>
+      <p class="page-subtitle">Lecture notes, PDFs, videos, and resources</p>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <select class="form-control" id="mat-course-filter" style="width:auto;" onchange="filterMaterials()">
+        <option value="">All Courses</option>
+        <option value="AVM 204.A">AVM 204.A</option>
+        <option value="AVM 306.A">AVM 306.A</option>
+        <option value="AVM 402.A">AVM 402.A</option>
+        <option value="MGMT 311.A">MGMT 311.A</option>
+        <option value="SCM 205">SCM 205</option>
+      </select>
+      <select class="form-control" id="mat-type-filter" style="width:auto;" onchange="filterMaterials()">
+        <option value="">All Types</option>
+        <option value="pdf">PDF</option>
+        <option value="ppt">PPT</option>
+        <option value="docx">DOCX</option>
+        <option value="video">Video</option>
+        <option value="zip">ZIP</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Search -->
+  <div style="margin-bottom:20px;" class="animate-in" style="animation-delay:0.05s;">
+    <div class="search-box" style="max-width:420px;">
+      <i class="fas fa-search"></i>
+      <input type="text" placeholder="Search materials..." id="mat-search" oninput="filterMaterials()">
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stat-cards animate-in" style="animation-delay:0.05s;margin-bottom:24px;">
+    <div class="stat-card red"><div class="stat-icon red"><i class="fas fa-file-pdf"></i></div><div class="stat-value">24</div><div class="stat-label">PDF Files</div></div>
+    <div class="stat-card pink"><div class="stat-icon pink"><i class="fas fa-file-powerpoint"></i></div><div class="stat-value">12</div><div class="stat-label">Presentations</div></div>
+    <div class="stat-card blue"><div class="stat-icon blue"><i class="fas fa-video"></i></div><div class="stat-value">8</div><div class="stat-label">Videos</div></div>
+    <div class="stat-card white"><div class="stat-icon white"><i class="fas fa-file-archive"></i></div><div class="stat-value">5</div><div class="stat-label">Other Files</div></div>
+  </div>
+
+  <div id="materials-container" class="animate-in" style="animation-delay:0.1s;display:flex;flex-direction:column;gap:8px;"></div>
+</main>
+<div id="toast-container"></div>
+<script src="js/layout.js"></script>
+<script src="js/main.js"></script>
+<script>
+document.getElementById('sidebar-placeholder').innerHTML = getSidebar('materials.html');
+document.getElementById('topbar-placeholder').innerHTML = getTopbar('Materials', [{ label: 'Materials' }]);
+
+const MATERIALS = [
+  { course:'AVM 204.A', name:'AVM204 Syllabus 25-26', type:'pdf', week:'General', size:'1.2 MB', date:'Feb 9, 2026' },
+  { course:'AVM 204.A', name:'AVM 204 - Lecture Slides I', type:'pdf', week:'Week 1 (9-15 Feb)', size:'4.8 MB', date:'Feb 9, 2026' },
+  { course:'AVM 204.A', name:'AVM 204 - Lecture Slides II: Airport Systems', type:'pdf', week:'Week 2 (16-22 Feb)', size:'5.1 MB', date:'Feb 16, 2026' },
+  { course:'AVM 204.A', name:'IGA Master Plan Overview', type:'pdf', week:'Week 3 (23 Feb - 1 Mar)', size:'8.3 MB', date:'Feb 23, 2026' },
+  { course:'AVM 204.A', name:'Airport Strategic Planning Presentation', type:'ppt', week:'Week 5', size:'12.1 MB', date:'Mar 9, 2026' },
+  { course:'AVM 306.A', name:'AVM 306 Syllabus 2026 Spring EN', type:'pdf', week:'General', size:'0.9 MB', date:'Feb 9, 2026' },
+  { course:'AVM 306.A', name:'AVM 306 - Lecture Slides I', type:'pdf', week:'Week 1 (9-15 Feb)', size:'3.7 MB', date:'Feb 9, 2026' },
+  { course:'AVM 306.A', name:'Process Management & KPIs Slides', type:'ppt', week:'Week 4', size:'6.4 MB', date:'Mar 2, 2026' },
+  { course:'AVM 306.A', name:'FMEA Template', type:'docx', week:'Week 6', size:'0.5 MB', date:'Mar 16, 2026' },
+  { course:'AVM 306.A', name:'Six Sigma DMAIC Toolkit', type:'zip', week:'Week 13', size:'15.2 MB', date:'May 4, 2026' },
+  { course:'AVM 306.A', name:'Lean Aviation Operations (Video)', type:'video', week:'Week 5', size:'320 MB', date:'Mar 9, 2026' },
+  { course:'AVM 402.A', name:'Simulation Manual v3.0', type:'pdf', week:'General', size:'7.8 MB', date:'Feb 9, 2026' },
+  { course:'AVM 402.A', name:'Round 3 Decision Template', type:'docx', week:'Week 10', size:'0.3 MB', date:'Apr 13, 2026' },
+  { course:'MGMT 311.A', name:'Project Management Fundamentals', type:'pdf', week:'Week 1', size:'3.5 MB', date:'Feb 9, 2026' },
+  { course:'MGMT 311.A', name:'Agile & Scrum Framework Slides', type:'ppt', week:'Week 4', size:'5.2 MB', date:'Mar 2, 2026' },
+  { course:'MGMT 311.A', name:'Project Charter Template', type:'docx', week:'Week 3', size:'0.4 MB', date:'Feb 23, 2026' },
+  { course:'SCM 205', name:'Supply Chain Fundamentals', type:'pdf', week:'Week 1', size:'4.1 MB', date:'Feb 9, 2026' },
+  { course:'SCM 205', name:'SCM Case Studies Collection', type:'pdf', week:'Week 6', size:'9.3 MB', date:'Mar 16, 2026' },
+  { course:'SCM 205', name:'Inventory Management Video Lecture', type:'video', week:'Week 10', size:'280 MB', date:'Apr 13, 2026' },
+];
+
+const typeIcons = { pdf:'fas fa-file-pdf', ppt:'fas fa-file-powerpoint', docx:'fas fa-file-word', zip:'fas fa-file-archive', video:'fas fa-video' };
+const typeLabels = { pdf:'PDF', ppt:'PPT', docx:'DOCX', zip:'ZIP', video:'Video' };
+
+function renderMaterials(list) {
+  if (!list.length) {
+    document.getElementById('materials-container').innerHTML = '<div class="empty-state"><i class="fas fa-folder-open"></i><p>No materials found.</p></div>';
+    return;
+  }
+  // Group by course
+  const grouped = {};
+  list.forEach(m => { if (!grouped[m.course]) grouped[m.course] = []; grouped[m.course].push(m); });
+  let html = '';
+  Object.entries(grouped).forEach(([course, items]) => {
+    html += `<div class="section-label">${course}</div>`;
+    items.forEach(m => {
+      html += `
+        <div class="material-card">
+          <div class="mat-icon mat-${m.type}"><i class="${typeIcons[m.type]}"></i></div>
+          <div class="mat-info">
+            <div class="mat-name">${m.name}</div>
+            <div class="mat-meta">${m.week} &bull; ${m.size} &bull; ${m.date}</div>
+          </div>
+          <span class="chip chip-${m.type==='pdf'?'red':m.type==='ppt'?'orange':m.type==='video'?'pink':'gray'}">${typeLabels[m.type]}</span>
+          <div class="mat-actions">
+            <button class="btn btn-ghost btn-sm" onclick="showToast('Opening ${m.name}...','info')" title="View"><i class="fas fa-eye"></i></button>
+            <button class="btn btn-primary btn-sm" onclick="showToast('Downloading ${m.name}...','success')" title="Download"><i class="fas fa-download"></i></button>
+          </div>
+        </div>`;
+    });
+  });
+  document.getElementById('materials-container').innerHTML = html;
+}
+
+function filterMaterials() {
+  const q = document.getElementById('mat-search').value.toLowerCase();
+  const course = document.getElementById('mat-course-filter').value;
+  const type = document.getElementById('mat-type-filter').value;
+  let result = MATERIALS;
+  if (q) result = result.filter(m => m.name.toLowerCase().includes(q) || m.course.toLowerCase().includes(q));
+  if (course) result = result.filter(m => m.course === course);
+  if (type) result = result.filter(m => m.type === type);
+  renderMaterials(result);
+}
+
+renderMaterials(MATERIALS);
+</script>
+</body>
+</html>

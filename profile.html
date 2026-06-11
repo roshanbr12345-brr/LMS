@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Profile - ÖZU.LMS</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/responsive.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+.profile-hero {
+  background: linear-gradient(135deg,#1a0a12 0%,#0d1a2a 100%);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap;
+  margin-bottom: 24px; position: relative; overflow: hidden;
+}
+.profile-hero::before {
+  content:''; position:absolute; right:-60px; top:-60px;
+  width:240px; height:240px;
+  background: radial-gradient(circle, rgba(200,16,46,0.12), transparent 70%);
+}
+.profile-avatar-wrap { position: relative; flex-shrink: 0; }
+.profile-avatar {
+  width: 96px; height: 96px;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-pink));
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display); font-weight: 800; font-size: 32px; color: white;
+  border: 3px solid rgba(200,16,46,0.4);
+}
+.profile-avatar-edit {
+  position: absolute; bottom: 0; right: 0;
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--color-primary); color: white; border: 2px solid var(--color-surface);
+  display: flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer;
+}
+.profile-name { font-family: var(--font-display); font-size: 22px; font-weight: 700; color: var(--color-white); margin-bottom: 4px; }
+.profile-role { font-size: 13px; color: var(--color-text-muted); margin-bottom: 12px; }
+.profile-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.profile-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.profile-info-item { background: var(--color-surface2); border: 1px solid var(--color-border); border-radius: var(--radius); padding: 12px 14px; }
+.pii-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--color-text-dim); margin-bottom: 4px; }
+.pii-value { font-size: 13px; color: var(--color-text); font-weight: 500; }
+.misc-link { display: flex; align-items: center; gap: 8px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.04); text-decoration: none; color: var(--color-primary); font-size: 13px; transition: opacity 0.15s; }
+.misc-link:hover { opacity: 0.7; }
+.misc-link:last-child { border-bottom: none; }
+</style>
+</head>
+<body>
+<div id="sidebar-placeholder"></div>
+<div id="topbar-placeholder"></div>
+<main class="main-content">
+  <div class="page-header animate-in" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+    <div>
+      <h1 class="page-title">Profile</h1>
+      <p class="page-subtitle">Your student profile and account settings</p>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="showToast('Reset to default','info')">Reset page to default</button>
+  </div>
+
+  <!-- Hero -->
+  <div class="profile-hero animate-in" style="animation-delay:0.05s;">
+    <div class="profile-avatar-wrap">
+      <div class="profile-avatar">VT</div>
+      <div class="profile-avatar-edit" onclick="showToast('Photo upload coming soon','info')"><i class="fas fa-camera"></i></div>
+    </div>
+    <div style="flex:1;min-width:200px;position:relative;z-index:1;">
+      <div class="profile-name">Vigneshrajan Theyagarajan</div>
+      <div class="profile-role">Student &bull; Aviation Management</div>
+      <div class="profile-tags">
+        <span class="chip chip-red">Spring 2025/26</span>
+        <span class="chip chip-blue">3rd Year</span>
+        <span class="chip chip-green">Active</span>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-primary btn-sm" data-modal="edit-profile-modal"><i class="fas fa-edit"></i> Edit Profile</button>
+      <button class="btn btn-ghost btn-sm" data-modal="change-pw-modal"><i class="fas fa-key"></i> Change Password</button>
+    </div>
+  </div>
+
+  <div class="grid-12 animate-in" style="animation-delay:0.1s;">
+    <!-- Left: User Details -->
+    <div style="display:flex;flex-direction:column;gap:20px;">
+      <div class="card">
+        <div class="card-title" style="margin-bottom:16px;">User Details</div>
+        <a href="#" class="misc-link" onclick="openModal('edit-profile-modal');return false;"><i class="fas fa-user-edit"></i> Edit profile</a>
+        <div class="pii-label" style="margin-top:12px;">Email Address</div>
+        <div style="font-size:13px;color:var(--color-text);margin-bottom:4px;">vigneshrajan.theyagarajan@ozu.edu.tr</div>
+        <div style="font-size:11px;color:var(--color-text-muted);">(Visible to other course participants)</div>
+
+        <div class="divider"></div>
+        <div class="card-title" style="margin-bottom:12px;font-size:13px;">Privacy and Policies</div>
+        <a href="#" class="misc-link"><i class="fas fa-shield-alt"></i> Data retention summary</a>
+
+        <div class="divider"></div>
+        <div class="card-title" style="margin-bottom:12px;font-size:13px;">Course Details</div>
+        <div style="font-size:12px;font-weight:600;color:var(--color-text-muted);margin-bottom:8px;">Course profiles</div>
+        <a href="course-details.html?id=AVM204" class="misc-link"><i class="fas fa-book-open"></i> AVM 204.A: Airport Strategic Planning (Spring 2025/26)</a>
+        <a href="course-details.html?id=AVM306" class="misc-link"><i class="fas fa-book-open"></i> AVM 306.A: Operations Management in Aviation (Spring 2025/26)</a>
+        <a href="#" class="misc-link"><i class="fas fa-book-open"></i> AVM 402.A: Aviation Business Simulation (Spring 2025/26)</a>
+        <a href="#" class="misc-link"><i class="fas fa-book-open"></i> MGMT 311.A: Project Management (Spring 2025/26)</a>
+      </div>
+    </div>
+
+    <!-- Right: Info + Miscellaneous -->
+    <div style="display:flex;flex-direction:column;gap:20px;">
+      <div class="card">
+        <div class="card-title" style="margin-bottom:14px;">Student Information</div>
+        <div class="profile-info-grid">
+          <div class="profile-info-item"><div class="pii-label">Student ID</div><div class="pii-value">STU-2021-4892</div></div>
+          <div class="profile-info-item"><div class="pii-label">Department</div><div class="pii-value">Aviation Management</div></div>
+          <div class="profile-info-item"><div class="pii-label">Semester</div><div class="pii-value">Spring 2025/26</div></div>
+          <div class="profile-info-item"><div class="pii-label">Year</div><div class="pii-value">3rd Year</div></div>
+          <div class="profile-info-item"><div class="pii-label">GPA</div><div class="pii-value" style="color:var(--color-primary);font-weight:700;">3.7 / 4.0</div></div>
+          <div class="profile-info-item"><div class="pii-label">Credits Earned</div><div class="pii-value">87 / 120</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="margin-bottom:12px;">Miscellaneous</div>
+        <a href="#" class="misc-link"><i class="fas fa-rss"></i> Blog entries</a>
+        <a href="#" class="misc-link"><i class="fas fa-comments"></i> Forum posts</a>
+        <a href="#" class="misc-link"><i class="fas fa-comment-dots"></i> Forum discussions</a>
+        <a href="#" class="misc-link"><i class="fas fa-graduation-cap"></i> Learning plans</a>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="margin-bottom:12px;">Reports</div>
+        <a href="reports.html" class="misc-link"><i class="fas fa-desktop"></i> Browser sessions</a>
+        <a href="grades.html" class="misc-link"><i class="fas fa-chart-bar"></i> Grades overview</a>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="margin-bottom:12px;">Mobile App</div>
+        <p style="font-size:12px;color:var(--color-text-muted);margin-bottom:10px;">This site has mobile app access enabled.</p>
+        <button class="btn btn-outline btn-sm" onclick="showToast('Redirecting to app store...','info')"><i class="fas fa-mobile-alt"></i> Download the mobile app</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Edit Profile Modal -->
+<div class="modal-overlay" id="edit-profile-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Edit Profile</div>
+      <button class="modal-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">First Name</label><input type="text" class="form-control" value="Vigneshrajan"></div>
+      <div class="form-group"><label class="form-label">Last Name</label><input type="text" class="form-control" value="Theyagarajan"></div>
+      <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-control" value="vigneshrajan.theyagarajan@ozu.edu.tr"></div>
+      <div class="form-group"><label class="form-label">Phone</label><input type="tel" class="form-control" placeholder="+90 ..."></div>
+      <div class="form-group"><label class="form-label">Bio</label><textarea class="form-control" placeholder="Write a short bio..."></textarea></div>
+      <button class="btn btn-primary" style="width:100%;" onclick="closeModal('edit-profile-modal');showToast('Profile updated!','success')"><i class="fas fa-save"></i> Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Change Password Modal -->
+<div class="modal-overlay" id="change-pw-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Change Password</div>
+      <button class="modal-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Current Password</label><input type="password" class="form-control" placeholder="Enter current password"></div>
+      <div class="form-group"><label class="form-label">New Password</label><input type="password" class="form-control" placeholder="Enter new password"></div>
+      <div class="form-group"><label class="form-label">Confirm New Password</label><input type="password" class="form-control" placeholder="Confirm new password"></div>
+      <button class="btn btn-primary" style="width:100%;" onclick="closeModal('change-pw-modal');showToast('Password changed!','success')"><i class="fas fa-key"></i> Update Password</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="js/layout.js"></script>
+<script src="js/main.js"></script>
+<script>
+document.getElementById('sidebar-placeholder').innerHTML = getSidebar('profile.html');
+document.getElementById('topbar-placeholder').innerHTML = getTopbar('Profile', [{ label: 'Profile' }]);
+</script>
+</body>
+</html>
