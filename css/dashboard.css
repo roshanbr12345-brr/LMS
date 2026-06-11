@@ -1,0 +1,144 @@
+/* ===== Dashboard Specific Styles ===== */
+
+/* Welcome Banner shimmer animation */
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--color-surface2) 25%, var(--color-surface3) 50%, var(--color-surface2) 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: var(--radius);
+}
+
+/* Dashboard layout helpers */
+.dash-section { margin-bottom: 28px; }
+.dash-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--color-text-dim);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.dash-section-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+
+/* Stat card pulse on hover */
+.stat-card:hover .stat-value {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-pink));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Activity feed */
+.activity-feed {
+  position: relative;
+  padding-left: 20px;
+}
+.activity-feed::before {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, var(--color-primary), transparent);
+}
+.activity-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  border: 2px solid var(--color-surface);
+  position: absolute;
+  left: -20px;
+  top: 4px;
+}
+
+/* Quick links grid */
+.quick-links {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.quick-link-item {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 16px 12px;
+  text-align: center;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.quick-link-item:hover {
+  border-color: var(--color-primary);
+  background: rgba(200,16,46,0.06);
+  transform: translateY(-2px);
+}
+.quick-link-item i { font-size: 20px; }
+.quick-link-item span { font-size: 11px; font-weight: 600; color: var(--color-text-muted); }
+
+/* Course progress ring */
+.progress-ring-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.progress-ring-text {
+  position: absolute;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-white);
+}
+
+/* Deadline urgency pulse */
+@keyframes urgencyPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+.urgent { animation: urgencyPulse 1.5s ease-in-out infinite; }
+
+/* Notification bell wiggle */
+@keyframes bellWiggle {
+  0%, 100% { transform: rotate(0); }
+  25% { transform: rotate(15deg); }
+  75% { transform: rotate(-15deg); }
+}
+.bell-wiggle { animation: bellWiggle 0.4s ease; }
+
+/* GPA gauge */
+.gpa-gauge {
+  position: relative;
+  width: 140px;
+  height: 70px;
+  overflow: hidden;
+  margin: 0 auto 8px;
+}
+.gpa-gauge svg { position: absolute; top: 0; left: 0; }
+
+/* Responsive tweaks for dashboard */
+@media (max-width: 1200px) {
+  .quick-links { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 768px) {
+  .quick-links { grid-template-columns: repeat(2, 1fr); }
+  .dash-section-title { font-size: 11px; }
+}

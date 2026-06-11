@@ -1,0 +1,184 @@
+/* ===== ULMS Responsive Styles ===== */
+
+/* ── Large Desktop (1400px+) ── */
+@media (min-width: 1400px) {
+  .main-content { padding: 28px 32px; }
+  .stat-cards { grid-template-columns: repeat(4, 1fr); }
+  .course-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+}
+
+/* ── Desktop (1200–1399px) ── */
+@media (max-width: 1200px) {
+  :root { --sidebar-width: 230px; }
+  .grid-3 { grid-template-columns: 1fr 1fr; }
+}
+
+/* ── Laptop (1024–1199px) ── */
+@media (max-width: 1024px) {
+  .grid-21 { grid-template-columns: 1fr; }
+  .grid-12 { grid-template-columns: 1fr; }
+  .grid-2  { grid-template-columns: 1fr; }
+  .stat-cards { grid-template-columns: repeat(2, 1fr); }
+  .search-box input { width: 140px; }
+  .course-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+}
+
+/* ── Tablet (768–1023px) ── */
+@media (max-width: 768px) {
+  :root {
+    --sidebar-width: 260px;
+    --topbar-height: 56px;
+  }
+
+  /* Sidebar slides in from left on mobile */
+  .sidebar {
+    transform: translateX(-100%);
+    box-shadow: none;
+    z-index: 200;
+  }
+  .sidebar.mobile-open {
+    transform: translateX(0);
+    box-shadow: 4px 0 20px rgba(0,0,0,0.5);
+  }
+  .sidebar.mobile-open .sidebar-logo-text,
+  .sidebar.mobile-open .nav-label,
+  .sidebar.mobile-open .nav-section-title { display: initial !important; }
+
+  /* Overlay behind open sidebar */
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 199;
+    backdrop-filter: blur(2px);
+  }
+  .sidebar-overlay.active { display: block; }
+
+  .topbar { left: 0 !important; right: 0; }
+  .main-content { margin-left: 0 !important; padding: 16px; }
+
+  .page-title { font-size: 18px; }
+  .page-subtitle { font-size: 12px; }
+
+  .stat-cards { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .stat-value { font-size: 22px; }
+
+  .grid-3 { grid-template-columns: 1fr; }
+  .course-grid { grid-template-columns: 1fr; }
+
+  /* Hide search box on tablet, show icon only */
+  .search-box { display: none; }
+
+  /* Tabs scroll horizontally */
+  .tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+    padding-bottom: 2px;
+  }
+  .tab-btn { white-space: nowrap; flex-shrink: 0; }
+
+  /* Table horizontal scroll */
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { min-width: 500px; }
+
+  /* Calendar grid */
+  .full-cal-cell { min-height: 60px; padding: 4px; }
+  .event-pill { font-size: 9px; padding: 1px 4px; }
+
+  /* Modal full width */
+  .modal { max-width: 100%; margin: 0 16px; }
+
+  /* Breadcrumb hide on mobile */
+  .breadcrumb { display: none; }
+
+  /* Welcome banner stack */
+  .welcome-banner { flex-direction: column; gap: 16px; text-align: center; }
+  .welcome-avatar { margin: 0 auto; }
+
+  /* Toast bottom center */
+  #toast-container { bottom: 16px; right: 16px; left: 16px; }
+  .toast { min-width: unset; }
+
+  /* Cards full width */
+  .card { border-radius: 10px; }
+}
+
+/* ── Mobile (480–767px) ── */
+@media (max-width: 480px) {
+  :root { --topbar-height: 52px; }
+
+  .main-content { padding: 12px; }
+
+  .stat-cards { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .stat-card { padding: 14px; }
+  .stat-icon { width: 32px; height: 32px; font-size: 13px; margin-bottom: 10px; }
+  .stat-value { font-size: 20px; }
+  .stat-label { font-size: 11px; }
+
+  .page-title { font-size: 16px; }
+
+  /* File grid to 2 cols */
+  .file-grid { grid-template-columns: repeat(2, 1fr); }
+
+  /* Course cards single col */
+  .course-grid { grid-template-columns: 1fr; }
+
+  /* Topbar compact */
+  .topbar { padding: 0 12px; gap: 8px; }
+  .icon-btn { width: 32px; height: 32px; font-size: 13px; }
+
+  /* Assignment cards */
+  .asgn-footer { flex-direction: column; align-items: flex-start; gap: 8px; }
+
+  /* Profile info grid */
+  .profile-info-grid { grid-template-columns: 1fr; }
+
+  /* Quick links 2-col */
+  .quick-links { grid-template-columns: repeat(2, 1fr); }
+
+  /* Chart canvas max height */
+  canvas { max-height: 220px; }
+
+  /* Buttons smaller */
+  .btn-lg { padding: 8px 16px; font-size: 13px; }
+}
+
+/* ── Extra Small (< 380px) ── */
+@media (max-width: 380px) {
+  .stat-cards { grid-template-columns: 1fr; }
+  .file-grid { grid-template-columns: 1fr; }
+  .export-btns { flex-wrap: wrap; }
+}
+
+/* ── Print Styles ── */
+@media print {
+  .sidebar, .topbar, .btn, .icon-btn, #toast-container { display: none !important; }
+  .main-content { margin: 0 !important; padding: 0 !important; }
+  body { background: white; color: black; }
+  .card { border: 1px solid #ddd; box-shadow: none; }
+  .page-title { color: black; }
+}
+
+/* ── Touch Device Optimisations ── */
+@media (hover: none) {
+  .course-card:hover { transform: none; }
+  .stat-card:hover { transform: none; }
+  .nav-item:hover { background: transparent; }
+  .btn:hover { transform: none; box-shadow: none; }
+}
+
+/* ── Dark / Light Theme Fine-tuning ── */
+[data-theme="light"] .sidebar { box-shadow: 2px 0 10px rgba(0,0,0,0.08); }
+[data-theme="light"] .card { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+[data-theme="light"] .topbar { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+[data-theme="light"] .stat-card { box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+[data-theme="light"] .course-card { box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+[data-theme="light"] .welcome-banner { background: linear-gradient(135deg, #fff5f7, #f0f5ff); }
+[data-theme="light"] .full-cal-cell { border-color: #e8e8ec; }
+[data-theme="light"] table th { color: #999; }
+[data-theme="light"] .sidebar-logo-text { color: #111; }
+[data-theme="light"] .nav-item { color: #555; }
+[data-theme="light"] .nav-item:hover { color: #111; background: var(--color-surface2); }
+[data-theme="light"] .nav-item.active { color: var(--color-primary); }
